@@ -1,1 +1,5 @@
+.idea
 db
+/postgres/data/
+/neo4j/data/
+.env
