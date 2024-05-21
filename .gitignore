@@ -3,3 +3,5 @@ db
 /postgres/data/
 /neo4j/data/
 .env
+.DS_Store
+scripts/.DS_Store
