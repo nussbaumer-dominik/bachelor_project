@@ -4,8 +4,10 @@ import time
 
 from neo4j import GraphDatabase
 
+from iconnection import IConnection
 
-class Neo4jConnection:
+
+class Neo4jConnection(IConnection):
     def __init__(self, uri, user, password):
         self.uri = uri
         self.user = user

@@ -4,8 +4,10 @@ import time
 
 from psycopg import connect
 
+from iconnection import IConnection
 
-class PostgreSQLConnection:
+
+class PostgreSQLConnection(IConnection):
     def __init__(self, host, port, user, password):
         self.conn = connect(host=host, port=port, user=user, password=password)
 
@@ -55,6 +57,7 @@ class PostgreSQLConnection:
                 result["rows"] = str(
                     result["rows"])  # Convert list of dicts to string if preserving structure is needed
                 writer.writerow(result)
+
 
 def save_query_results(data, result_dir: str, filename: str = None, headers: list[str] = None):
     if not os.path.exists(result_dir):

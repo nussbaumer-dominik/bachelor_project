@@ -1,3 +1,3 @@
 query_index,query_filename,execution_time_s,query_plan,columns,num_records,rows
-1,q1,0.5997960567474365,N/A,['count'],1,[{'count': 8773828}]
-2,q2,0.07220816612243652,N/A,['count'],1,[{'count': 82990}]
+1,q1,0.5967321395874023,N/A,['count'],1,[{'count': 8773828}]
+2,q2,0.07081413269042969,N/A,['count'],1,[{'count': 82990}]
