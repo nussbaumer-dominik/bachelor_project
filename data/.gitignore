@@ -1,0 +1,12 @@
+social-network-sf*/
+!social-network-sf0.003-*/
+!social-network-sfexample-*/
+*.nt
+*.nq
+*.csv-headerless
+*-reverse.csv
+*.tar.zst
+mydb*
+Person_knows_Person_bidirectional.csv
+*Message*.csv
+.converted

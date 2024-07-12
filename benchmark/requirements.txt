@@ -1,0 +1,7 @@
+python-dotenv
+neo4j
+psycopg
+numpy
+pandas
+matplotlib
+seaborn

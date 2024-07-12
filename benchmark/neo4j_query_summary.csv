@@ -1,0 +1,3 @@
+query_index,execution_time,available_after,consumed_after,num_records
+1,0.5985710620880127,3,572,1
+2,0.38194918632507324,77,299,1

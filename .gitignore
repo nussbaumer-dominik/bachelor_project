@@ -5,3 +5,4 @@ db
 .env
 .DS_Store
 scripts/.DS_Store
+*.swp
