@@ -1,7 +1,5 @@
 # Labelled Subgraph Query Benchmark (LSQB)
 
-[![Build Status](https://circleci.com/gh/ldbc/lsqb.svg?style=svg)](https://circleci.com/gh/ldbc/lsqb)
-
 :page_facing_up: [LSQB: A Large-Scale Subgraph Query Benchmark](https://dl.acm.org/doi/pdf/10.1145/3461837.3464516), GRADES-NDA'21 paper ([presentation](https://docs.google.com/presentation/d/13B5XwwSlgi-r3a9tKNxo8HmdIRzegO6FMB-M6I1RW0I))
 
 ## Overview
@@ -75,58 +73,14 @@ scripts/download-merged-fk-data-sets.sh
 
 For more information, see the [download instructions and links](https://github.com/ldbc/data-sets-surf-repository/#labelled-subgraph-query-benchmark-lsqb).
 
-#### Generating the data sets from scratch
-
-You can generate your own data sets. Note that these may differ in size for different versions of the data generator – for publications, it's recommended to use the pre-generated data sets linked above.
-
-1. Run the [LDBC Sparj Datagen](https://github.com/ldbc/ldbc_snb_datagen/) using CSV outputs and raw mode (see its README for instructions).
-
-1. Use the scripts in the [converter](https://github.com/ldbc/ldbc_snb_data_converter) repository:
-
-   ```bash
-   cd out/csv/raw/composite_merge_foreign/
-   export DATAGEN_DATA_DIR=`pwd`
-   ```
-
-1. Go to the [data converter repository](https://github.com/ldbc/ldbc_snb_data_converter):
-
-   ```bash
-   ./spark-concat.sh ${DATAGEN_DATA_DIR}
-   ./load.sh ${DATAGEN_DATA_DIR} --no-header
-   ./transform.sh
-   cat export/snb-export-only-ids-projected-fk.sql | ./duckdb ldbc.duckdb
-   cat export/snb-export-only-ids-merged-fk.sql    | ./duckdb ldbc.duckdb
-   ```
-
-1. Copy the generated files:
-
-   ```bash
-   export SF=1
-   cp -r data/csv-only-ids-projected-fk/ ~/git/snb/lsqb/data/social-network-sf${SF}-projected-fk
-   cp -r data/csv-only-ids-merged-fk/    ~/git/snb/lsqb/data/social-network-sf${SF}-merged-fk
-   ```
-
 ### Running the benchmark
 
 The following implementations are provided. The :whale: symbol denotes that the implementation uses Docker.
 
 Stable implementations:
 
-* `umb`: [Umbra](https://umbra-db.com/) [SQL] :whale:
-* `hyp`: [HyPer](https://hyper-db.de/) [SQL] :whale:
-* `ddb`: [DuckDB](https://www.duckdb.org/) [SQL] (embedded)
 * `pos`: [PostgreSQL](https://www.postgresql.org/) [SQL] :whale:
-* `mys`: [MySQL](https://www.mysql.com/) [SQL] :whale:
 * `neo`: [Neo4j Community Edition](https://neo4j.com/) [Cypher] :whale:
-* `red`: [RedisGraph](https://oss.redislabs.com/redisgraph/) [Cypher] :whale:
-* `mem`: [Memgraph](https://memgraph.com/) [Cypher] :whale:
-* `vos`: [Virtuoso Open-Source Edition](http://vos.openlinksw.com/owiki/wiki/VOS) [SPARQL] :whale:
-* `xgt`: [Trovares xGT](https://www.trovares.com/) [Cypher] :whale:
-* `rdm`: [RapidMatch](https://github.com/RapidsAtHKUST/RapidMatch) [`.graph`] (separate process)
-
-WIP implementations:
-
-* `kuz`: [Kùzu](https://kuzudb.com/) [Cypher] (embedded)
 
 :warning: Both Neo4j and Memgraph use the Bolt protocol for communicating with the client.
 To avoid clashing on port `7687`, the Memgraph instance uses port `27687` for its Bolt communication.
