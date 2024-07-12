@@ -1,8 +1,11 @@
 import csv
 import os
+import statistics
 import time
 
+import neo4j.exceptions
 from neo4j import GraphDatabase
+from tqdm import tqdm  # Import tqdm for progress bars
 
 from iconnection import IConnection
 
@@ -17,50 +20,63 @@ class Neo4jConnection(IConnection):
     def close(self):
         self.driver.close()
 
-    def run_queries(self, queries, result_dir="neo4j_results"):
+    def run_queries(self, queries, result_dir="neo4j_results", runs=5):
         results = []
         all_query_stats = []
-        with self.driver.session() as session:
-            for idx, (filename, query) in enumerate(queries):
-                print(f"Running Neo4j query {filename}")
-                start_time = time.time()
-                result = session.run(query)
-                data = result.data()
-                result_summary = result.consume()
-                end_time = time.time()
+        for idx, (filename, query) in enumerate(queries):
+            execution_times = []
+            query_errors = []
+            with self.driver.session() as session:
+                for _ in tqdm(range(runs), desc=f"Executing {filename}"):
+                    try:
+                        start_time = time.time()
+                        result = session.run(query)
+                        data = result.data()
+                        end_time = time.time()
+                        execution_times.append(end_time - start_time)
+                    except neo4j.exceptions.Neo4jError as e:
+                        query_errors.append(str(e))
+                        continue  # Continue to the next iteration
 
-                query_stats = {
-                    "query_index": idx + 1,
-                    "query_filename": filename,
-                    "execution_time_s": end_time - start_time,
-                    "available_after_ms": result_summary.result_available_after,
-                    "consumed_after_ms": result_summary.result_consumed_after,
-                    "num_records": len(data)
-                }
-                all_query_stats.append(query_stats)
-                results.append({"data": data})
-                save_query_results(data, result_dir, f"neo4j_{filename}_result", ["count"])
+            mean_time = statistics.mean(execution_times) if execution_times else None
+            stdev_time = statistics.stdev(execution_times) if len(execution_times) > 1 else 0
+            num_records = len(data) if execution_times else 0
 
+            query_stats = {
+                "query_index": idx + 1,
+                "filename": filename,
+                "result": data,
+                "mean_execution_time_s": mean_time,
+                "std_dev_time_s": stdev_time,
+                "num_records": num_records,
+                "execution_times": execution_times,
+                "errors": query_errors
+            }
+
+            all_query_stats.append(query_stats)
+            results.append({"data": data if execution_times else []})
+        self.save_all_query_stats(all_query_stats, result_dir)
         return results, all_query_stats
 
     @staticmethod
-    def save_all_query_stats(all_results: list, result_dir: str):
+    def save_all_query_stats(all_results, result_dir):
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
-
-        with open(f"{result_dir}/neo4j_query_summary.csv", "w", newline="") as file:
-            fieldnames = ['query_index', "query_filename", 'execution_time_s', 'available_after_ms',
-                          'consumed_after_ms',
-                          'num_records']
+        filename = f"{result_dir}/neo4j_query_summary.csv"
+        with open(filename, "w", newline="") as file:
+            fieldnames = ['query_index', "filename", "result", 'mean_execution_time_s', 'std_dev_time_s', 'num_records',
+                          'errors']
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(all_results)
+            for result in all_results:
+                row = {key: result[key] for key in result if key in fieldnames}
+                row['errors'] = str(result['errors'])  # Convert list of errors to string if there are any
+                writer.writerow(row)
 
 
 def save_query_results(data, result_dir: str, filename: str = None, headers: list[str] = None):
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-
     with open(f"{result_dir}/{filename}.csv", "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=headers)
         writer.writeheader()
