@@ -8,9 +8,9 @@ WITH RECURSIVE friends AS (
     SELECT f.person1id, f.person2id, fr.depth + 1, fr.path || f.person2id
     FROM Person_knows_Person f
     JOIN friends fr ON f.person1id = fr.person2id
-    WHERE fr.depth < 4 AND f.person2id <> ALL(fr.path)
+    WHERE fr.depth < 6 AND f.person2id <> ALL(fr.path)
 )
 SELECT DISTINCT person2id
 FROM friends
-WHERE depth = 4
+WHERE depth = 6
 ORDER BY person2id;

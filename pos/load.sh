@@ -12,7 +12,7 @@ cat sql/general/drop.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U pos
 
 echo Loading data to Postgres...
 cat sql/general/schema.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U postgres
-sed "s|PATHVAR|/data|" sql/snb-load.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U postgres
+sed "s|PATHVAR|/data|" sql/general/snb-load.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U postgres
 echo Done
 
 echo Initializing views and indexes...

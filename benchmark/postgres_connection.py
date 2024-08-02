@@ -1,12 +1,18 @@
 import csv
 import os
+import signal
 import statistics
 import time
+from contextlib import contextmanager
 
 from psycopg import connect, OperationalError, ProgrammingError
 from tqdm import tqdm
 
 from iconnection import IConnection
+
+
+class TimeoutError(Exception):
+    pass
 
 
 class PostgreSQLConnection(IConnection):
@@ -16,22 +22,39 @@ class PostgreSQLConnection(IConnection):
     def close(self):
         self.conn.close()
 
-    def run_queries(self, queries, result_dir="postgres_results", runs=5):
+    @contextmanager
+    def timeout(self, time):
+        # Register a function to raise a TimeoutError on the signal.
+        signal.signal(signal.SIGALRM, self.raise_timeout)
+        signal.alarm(time)  # Trigger alarm in `time` seconds
+        try:
+            yield
+        finally:
+            # Disable the alarm
+            signal.alarm(0)
+
+    def raise_timeout(self, signum, frame):
+        raise TimeoutError("Query timed out")
+
+    def run_queries(self, queries, result_dir="postgres_results", runs=5, timeout_seconds=120):
         results = []
         all_query_stats = []
+
         with self.conn.cursor() as cursor:
             for idx, (filename, query) in enumerate(queries):
                 execution_times = []
                 query_errors = []
+                rows = []
                 for _ in tqdm(range(runs), desc=f"Executing {filename}"):
                     try:
-                        start_time = time.time()
-                        cursor.execute(query)
-                        rows = cursor.fetchall()
-                        columns = [desc[0] for desc in cursor.description]
-                        end_time = time.time()
+                        with self.timeout(timeout_seconds):
+                            start_time = time.time()
+                            cursor.execute(query)
+                            rows = cursor.fetchall()
+                            columns = [desc[0] for desc in cursor.description]
+                            end_time = time.time()
                         execution_times.append(end_time - start_time)
-                    except (OperationalError, ProgrammingError) as e:
+                    except (OperationalError, ProgrammingError, TimeoutError) as e:
                         query_errors.append(str(e))
                         continue  # Continue to the next iteration
 

@@ -5,12 +5,12 @@ WITH RECURSIVE friends AS (
 
     UNION ALL
 
-    SELECT f.person1id, f.person2id, fr.depth + 1, path || f.person2id
+    SELECT f.person1id, f.person2id, fr.depth + 1, fr.path || f.person2id
     FROM Person_knows_Person f
     JOIN friends fr ON f.person1id = fr.person2id
-    WHERE fr.depth < 4 AND f.person2id != ALL(fr.path)
+    WHERE fr.depth < 5 AND f.person2id <> ALL(fr.path)
 )
 SELECT DISTINCT person2id
 FROM friends
-WHERE depth = 4
+WHERE depth = 5
 ORDER BY person2id;
