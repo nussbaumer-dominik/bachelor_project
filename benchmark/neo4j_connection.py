@@ -1,13 +1,19 @@
 import csv
 import os
+import signal
 import statistics
 import time
+from contextlib import contextmanager
 
 import neo4j.exceptions
 from neo4j import GraphDatabase
-from tqdm import tqdm  # Import tqdm for progress bars
+from tqdm import tqdm
 
 from iconnection import IConnection
+
+
+class TimeoutError(Exception):
+    pass
 
 
 class Neo4jConnection(IConnection):
@@ -20,21 +26,37 @@ class Neo4jConnection(IConnection):
     def close(self):
         self.driver.close()
 
-    def run_queries(self, queries, result_dir="neo4j_results", runs=5):
+    @contextmanager
+    def timeout(self, time):
+        # Register a function to raise a TimeoutError on the signal.
+        signal.signal(signal.SIGALRM, self.raise_timeout)
+        signal.alarm(time)  # Trigger alarm in `time` seconds
+        try:
+            yield
+        finally:
+            # Disable the alarm
+            signal.alarm(0)
+
+    def raise_timeout(self, signum, frame):
+        raise TimeoutError("Query timed out")
+
+    def run_queries(self, queries, result_dir="neo4j_results", runs=5, timeout_seconds=120):
         results = []
         all_query_stats = []
         for idx, (filename, query) in enumerate(queries):
             execution_times = []
             query_errors = []
+            data = []
             with self.driver.session() as session:
                 for _ in tqdm(range(runs), desc=f"Executing {filename}"):
                     try:
-                        start_time = time.time()
-                        result = session.run(query)
-                        data = result.data()
-                        end_time = time.time()
+                        with self.timeout(timeout_seconds):
+                            start_time = time.time()
+                            result = session.run(query)
+                            data = result.data()
+                            end_time = time.time()
                         execution_times.append(end_time - start_time)
-                    except neo4j.exceptions.Neo4jError as e:
+                    except (neo4j.exceptions.Neo4jError, TimeoutError) as e:
                         query_errors.append(str(e))
                         continue  # Continue to the next iteration
 
@@ -70,15 +92,5 @@ class Neo4jConnection(IConnection):
             writer.writeheader()
             for result in all_results:
                 row = {key: result[key] for key in result if key in fieldnames}
-                row['errors'] = str(result['errors'])  # Convert list of errors to string if there are any
+                row['errors'] = str(result['errors'])
                 writer.writerow(row)
-
-
-def save_query_results(data, result_dir: str, filename: str = None, headers: list[str] = None):
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
-    with open(f"{result_dir}/{filename}.csv", "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=headers)
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
