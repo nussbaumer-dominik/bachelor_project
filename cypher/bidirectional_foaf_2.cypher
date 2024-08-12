@@ -1,4 +1,3 @@
 MATCH p = (start:Person {id: 772})-[:KNOWS*2]-(fof:Person)
 WHERE start <> fof
-RETURN DISTINCT fof.id AS person2id
-ORDER BY person2id;
+RETURN COUNT(DISTINCT fof.id) AS countOfPersons;

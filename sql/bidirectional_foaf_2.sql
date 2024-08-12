@@ -10,7 +10,6 @@ WITH RECURSIVE friends AS (
     JOIN friends fr ON f.person1id = fr.person2id
     WHERE fr.depth < 2 AND f.person2id <> ALL(fr.path)
 )
-SELECT DISTINCT person2id
+SELECT COUNT(DISTINCT person2id) AS countOfPersons
 FROM friends
-WHERE depth = 2
-ORDER BY person2id;
+WHERE depth = 2;

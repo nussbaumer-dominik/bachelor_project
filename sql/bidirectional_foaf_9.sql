@@ -8,8 +8,8 @@ WITH RECURSIVE friends AS (
     SELECT f.person1id, f.person2id, fr.depth + 1, fr.path || f.person2id
     FROM Person_knows_Person f
     JOIN friends fr ON f.person1id = fr.person2id
-    WHERE fr.depth < 5 AND f.person2id <> ALL(fr.path)
+    WHERE fr.depth < 9 AND f.person2id <> ALL(fr.path)
 )
 SELECT COUNT(DISTINCT person2id) AS countOfPersons
 FROM friends
-WHERE depth = 5;
+WHERE depth = 9;

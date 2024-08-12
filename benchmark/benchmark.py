@@ -61,7 +61,7 @@ def main():
             print("Running Neo4j Queries")
             neo4j_results, neo4j_query_stats = neo4j_conn.run_queries(
                 neo4j_queries, result_dir=args.neo4j_dir,
-                runs=args.runs
+                runs=args.runs, timeout_seconds=args.timeout
             )
             print("Neo4j Results", neo4j_results)
         finally:

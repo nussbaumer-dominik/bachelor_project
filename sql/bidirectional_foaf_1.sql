@@ -11,7 +11,6 @@ WITH RECURSIVE friends AS (
     WHERE fr.depth < 1 AND NOT f.person2id = ANY(fr.path)
     /* f.person2id <> ALL(fr.path) */
 )
-SELECT DISTINCT person2id, path
+SELECT COUNT(DISTINCT person2id) AS countOfPersons
 FROM friends
-WHERE depth = 1
-ORDER BY person2id;
+WHERE depth = 1;
