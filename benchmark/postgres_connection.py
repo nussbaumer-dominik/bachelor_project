@@ -51,12 +51,12 @@ class PostgreSQLConnection(IConnection):
                             start_time = time.time()
                             cursor.execute(query)
                             rows = cursor.fetchall()
-                            columns = [desc[0] for desc in cursor.description]
+                            # columns = [desc[0] for desc in cursor.description]
                             end_time = time.time()
                         execution_times.append(end_time - start_time)
                     except (OperationalError, ProgrammingError, TimeoutError) as e:
                         query_errors.append(str(e))
-                        continue  # Continue to the next iteration
+                        break
 
                 mean_time = statistics.mean(execution_times) if execution_times else None
                 stdev_time = statistics.stdev(execution_times) if len(execution_times) > 1 else 0

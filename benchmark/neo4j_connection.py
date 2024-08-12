@@ -29,14 +29,14 @@ class Neo4jConnection:
                 for _ in tqdm(range(runs), desc=f"Executing {filename}"):
                     try:
                         start_time = time.time()
-                        query = Query(query_string, timeout=timeout_seconds)  # Set timeout
+                        query = Query(query_string, timeout=timeout_seconds)
                         result = session.run(query)
-                        data = result.data()  # Fetch results
+                        data = result.data()
                         end_time = time.time()
                         execution_times.append(end_time - start_time)
                     except neo4j.exceptions.Neo4jError as e:
                         query_errors.append(str(e))
-                        continue  # Continue to the next iteration
+                        break
 
             mean_time = statistics.mean(execution_times) if execution_times else None
             stdev_time = statistics.stdev(execution_times) if len(execution_times) > 1 else 0
