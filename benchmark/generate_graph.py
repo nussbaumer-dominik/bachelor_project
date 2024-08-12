@@ -41,19 +41,23 @@ CONTAINER_NAME = "lsqb-neo"
 #
 #     return g
 
-def generate_graph(num_nodes, max_friendships):
-    g = nx.Graph()
-    g.add_nodes_from(range(num_nodes))
+# def generate_graph(num_nodes, max_friendships):
+#     g = nx.Graph()
+#     g.add_nodes_from(range(num_nodes))
+#
+#     for node in g.nodes():
+#         num_edges = min(max_friendships, num_nodes - 1)  # Use min to ensure we don't exceed the max friendships
+#         potential_friends = list(set(g.nodes()) - set(g.neighbors(node)) - {node})
+#         if num_edges > len(potential_friends):
+#             num_edges = len(potential_friends)
+#         friends = random.sample(potential_friends, num_edges)
+#         for friend in friends:
+#             g.add_edge(node, friend)
+#
+#     return g
 
-    for node in g.nodes():
-        num_edges = min(max_friendships, num_nodes - 1)  # Use min to ensure we don't exceed the max friendships
-        potential_friends = list(set(g.nodes()) - set(g.neighbors(node)) - {node})
-        if num_edges > len(potential_friends):
-            num_edges = len(potential_friends)
-        friends = random.sample(potential_friends, num_edges)
-        for friend in friends:
-            g.add_edge(node, friend)
-
+def generate_regular_graph(n, degree):
+    g = nx.random_regular_graph(degree, n)
     return g
 
 
@@ -68,6 +72,7 @@ def restart_neo4j():
 def import_graph_to_neo4j():
     command = (
         f'docker exec {CONTAINER_NAME} neo4j-admin database import full --delimiter="," '
+        "--id-type=INTEGER "
         f"--nodes=Person=import/nodes.csv "
         f"--relationships=KNOWS=import/edges.csv "
         "--overwrite-destination"
@@ -113,7 +118,8 @@ def create_graph_in_postgres(g):
 
 def main(num_nodes, avg_friendships, neo4j, postgres):
     graph_start_time = time.time()
-    g = generate_graph(num_nodes, avg_friendships)
+    #g = generate_graph(num_nodes, avg_friendships)
+    g = generate_regular_graph(num_nodes, avg_friendships)
     print(f"Graph generated in {time.time() - graph_start_time:.2f} seconds")
     print(f"Generated a graph with {num_nodes} nodes and {len(g.edges())} edges")
     if neo4j:
