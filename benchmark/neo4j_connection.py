@@ -1,22 +1,14 @@
 import csv
 import os
-import signal
 import statistics
 import time
-from contextlib import contextmanager
 
 import neo4j.exceptions
-from neo4j import GraphDatabase
-from tqdm import tqdm
-
-from iconnection import IConnection
+from neo4j import GraphDatabase, Query
+from tqdm import tqdm  # Import tqdm for progress bars
 
 
-class TimeoutError(Exception):
-    pass
-
-
-class Neo4jConnection(IConnection):
+class Neo4jConnection:
     def __init__(self, uri, user, password):
         self.uri = uri
         self.user = user
@@ -26,43 +18,29 @@ class Neo4jConnection(IConnection):
     def close(self):
         self.driver.close()
 
-    @contextmanager
-    def timeout(self, time):
-        # Register a function to raise a TimeoutError on the signal.
-        signal.signal(signal.SIGALRM, self.raise_timeout)
-        signal.alarm(time)  # Trigger alarm in `time` seconds
-        try:
-            yield
-        finally:
-            # Disable the alarm
-            signal.alarm(0)
-
-    def raise_timeout(self, signum, frame):
-        raise TimeoutError("Query timed out")
-
     def run_queries(self, queries, result_dir="neo4j_results", runs=5, timeout_seconds=120):
         results = []
         all_query_stats = []
-        for idx, (filename, query) in enumerate(queries):
+        for idx, (filename, query_string) in enumerate(queries):
             execution_times = []
             query_errors = []
             data = []
             with self.driver.session() as session:
                 for _ in tqdm(range(runs), desc=f"Executing {filename}"):
                     try:
-                        with self.timeout(timeout_seconds):
-                            start_time = time.time()
-                            result = session.run(query)
-                            data = result.data()
-                            end_time = time.time()
+                        start_time = time.time()
+                        query = Query(query_string, timeout=timeout_seconds)  # Set timeout
+                        result = session.run(query)
+                        data = result.data()  # Fetch results
+                        end_time = time.time()
                         execution_times.append(end_time - start_time)
-                    except (neo4j.exceptions.Neo4jError, TimeoutError) as e:
+                    except neo4j.exceptions.Neo4jError as e:
                         query_errors.append(str(e))
                         continue  # Continue to the next iteration
 
             mean_time = statistics.mean(execution_times) if execution_times else None
             stdev_time = statistics.stdev(execution_times) if len(execution_times) > 1 else 0
-            num_records = len(data) if execution_times else 0
+            num_records = len(data) if data else 0
 
             query_stats = {
                 "query_index": idx + 1,
@@ -76,7 +54,7 @@ class Neo4jConnection(IConnection):
             }
 
             all_query_stats.append(query_stats)
-            results.append({"data": data if execution_times else []})
+            results.append({"data": data if data else []})
         self.save_all_query_stats(all_query_stats, result_dir)
         return results, all_query_stats
 
@@ -92,5 +70,5 @@ class Neo4jConnection(IConnection):
             writer.writeheader()
             for result in all_results:
                 row = {key: result[key] for key in result if key in fieldnames}
-                row['errors'] = str(result['errors'])
+                row['errors'] = str(result['errors'])  # Convert list of errors to string if there are any
                 writer.writerow(row)
