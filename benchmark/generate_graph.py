@@ -20,7 +20,6 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 POSTGRES_PORT = os.getenv('POSTGRES_PORT')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-POSTGRES_IMPORT_PATH = os.getenv("POSTGRES_IMPORT_PATH")
 
 
 def generate_regular_graph(n: int, degree: int) -> nx.Graph:
@@ -65,17 +64,10 @@ def export_graph_to_csv(g: nx.Graph, neo4j: bool, postgres: bool):
             for edge in g.edges():
                 writer.writerow([edge[0], edge[1]])
 
-    if postgres:
-        with open(f'{POSTGRES_IMPORT_PATH}/edges.csv', 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["person1id", "person2id"])
-            for edge in g.edges():
-                writer.writerow([edge[0], edge[1]])
-                writer.writerow([edge[1], edge[0]])
 
-
-def bulk_import_to_postgres(g: nx.Graph, filepath, table_name: str):
+def bulk_import_to_postgres(g: nx.Graph, table_name: str):
     postgres_conn = PostgreSQLConnection(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD)
+    postgres_conn.connect()
     try:
         with postgres_conn.conn.cursor() as cursor:
             cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
@@ -107,7 +99,7 @@ def main(num_nodes: int, avg_friendships: int, neo4j: bool, postgres: bool):
         print("Graph created in Neo4j database.")
 
     if postgres:
-        bulk_import_to_postgres(g, f'{POSTGRES_IMPORT_PATH}/edges.csv', "Person_knows_Person")
+        bulk_import_to_postgres(g, "Person_knows_Person")
         print("Graph created in PostgreSQL database.")
     print("Done!")
 
