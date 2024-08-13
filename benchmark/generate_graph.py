@@ -6,14 +6,11 @@ import time
 
 import networkx as nx
 from dotenv import load_dotenv, find_dotenv
-from tqdm import tqdm
 
 from postgres_connection import PostgreSQLConnection
 
-# Load environment variables
 load_dotenv(find_dotenv(), override=True)
 
-# Database configurations
 NEO4J_URI = os.getenv('NEO4J_URI')
 NEO4J_USER = os.getenv('NEO4J_USER')
 NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD')
@@ -77,23 +74,6 @@ def export_graph_to_csv(g: nx.Graph, neo4j: bool, postgres: bool):
                 writer.writerow([edge[1], edge[0]])
 
 
-def create_graph_in_postgres(g: nx.Graph):
-    postgres_conn = PostgreSQLConnection(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD)
-    try:
-        with postgres_conn.conn.cursor() as cursor:
-            cursor.execute("DROP TABLE IF EXISTS person_knows_person;")
-            cursor.execute("CREATE TABLE person_knows_person (person1id INT, person2id INT);")
-
-            insert_query = "INSERT INTO person_knows_person (person1id, person2id) VALUES (%s, %s)"
-            for edge in tqdm(g.edges(), desc="Inserting relationships into PostgreSQL"):
-                cursor.execute(insert_query, (edge[0], edge[1]))
-                cursor.execute(insert_query, (edge[1], edge[0]))
-
-            postgres_conn.conn.commit()
-    finally:
-        postgres_conn.close()
-
-
 def bulk_import_to_postgres(g: nx.Graph, filepath, table_name: str):
     postgres_conn = PostgreSQLConnection(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD)
     try:
@@ -126,7 +106,6 @@ def main(num_nodes: int, avg_friendships: int, neo4j: bool, postgres: bool):
         print("Graph created in Neo4j database.")
 
     if postgres:
-        # create_graph_in_postgres(g)
         bulk_import_to_postgres(g, f'{POSTGRES_IMPORT_PATH}/edges.csv', "Person_knows_Person")
         print("Graph created in PostgreSQL database.")
     print("Done!")
