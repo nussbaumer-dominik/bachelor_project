@@ -80,13 +80,14 @@ def bulk_import_to_postgres(g: nx.Graph, filepath, table_name: str):
         with postgres_conn.conn.cursor() as cursor:
             cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
             cursor.execute(f"CREATE TABLE {table_name} (person1id INT, person2id INT);")
-            postgres_conn.conn.commit()  # Commit the structural changes
+            postgres_conn.conn.commit()
 
         with postgres_conn.conn.cursor() as cursor:
             with cursor.copy(f"COPY {table_name} (person1id, person2id) FROM STDIN") as copy:
                 for edge in g.edges():
-                    copy.write_row(edge)  # Write edge
-                    copy.write_row((edge[1], edge[0]))  # Write reverse edge
+                    copy.write_row(edge)
+                    copy.write_row((edge[1], edge[0]))
+            postgres_conn.conn.commit()
 
     except Exception as e:
         print(f"An error occurred during PostgreSQL bulk import: {e}")
@@ -119,7 +120,5 @@ if __name__ == '__main__':
                         help='Average number of friendships per node')
     parser.add_argument("-nf", "--neo4j", action="store_true", help="Run Neo4j")
     parser.add_argument("-pf", "--postgres", action="store_true", help="Run PostgreSQL")
-
     args = parser.parse_args()
-
     main(args.num_nodes, args.avg_friendships, args.neo4j, args.postgres)
