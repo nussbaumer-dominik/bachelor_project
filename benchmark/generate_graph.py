@@ -50,7 +50,7 @@ def import_graph_to_neo4j():
         print(f"An error occurred during Neo4j import: {e}")
 
 
-def export_graph_to_csv(g: nx.Graph, neo4j: bool, postgres: bool):
+def export_graph_to_csv(g: nx.Graph, neo4j: bool):
     if neo4j:
         with open(f'{NEO4J_IMPORT_PATH}/nodes.csv', 'w', newline='') as file:
             writer = csv.writer(file)
@@ -93,7 +93,7 @@ def main(num_nodes: int, avg_friendships: int, neo4j: bool, postgres: bool):
     g = generate_regular_graph(num_nodes, avg_friendships)
     print(f"Graph generated in {time.time() - graph_start_time:.2f} seconds")
     print(f"Generated a graph with {num_nodes:_} nodes and {len(g.edges()):_} edges")
-    export_graph_to_csv(g, neo4j, postgres)
+    export_graph_to_csv(g, neo4j)
     if neo4j:
         import_graph_to_neo4j()
         print("Graph created in Neo4j database.")

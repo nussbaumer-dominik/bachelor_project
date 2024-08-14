@@ -5,7 +5,7 @@ import time
 
 import neo4j.exceptions
 from neo4j import GraphDatabase, Query
-from tqdm import tqdm  # Import tqdm for progress bars
+from tqdm import tqdm
 
 
 class Neo4jConnection:

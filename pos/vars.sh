@@ -1,4 +1,3 @@
-export SF=0.1
 export POSTGRES_HOME=`pwd`/pos/scratch
 export POSTGRES_VERSION=16.3
 export POSTGRES_SCHEMA_DIR=`pwd`/sql
