@@ -20,18 +20,21 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 def run_query(con, variant, sf, query_id, query_spec, system, results_file):
+    print(f"Running query {query_id}...")
     start = time.time()
     cur = con.cursor()
     try:
         with timeout(300):
             cur.execute(query_spec)
     except TimeoutError:
+        print(f"Query {query_id} timed out")
         return
     result = cur.fetchall()
     end = time.time()
     duration = end - start
     results_file.write(f"{system}\t{variant}\t{sf}\t{query_id}\t{duration:.4f}\t{result[0][0]}\n")
     results_file.flush()
+    print(f"Completed {query_id} in {duration:.4f} seconds")
     return (duration, result)
 
 if len(sys.argv) < 2:
@@ -53,7 +56,7 @@ else:
 
 con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=5432)
 
-with open(f"results/results.csv", "a+") as results_file:
+with open(f"results/postgres-results.csv", "a+") as results_file:
     for i in range(1, 10):
         with open(f"sql/q{i}.sql", "r") as query_file:
             run_query(con, variant, sf, i, query_file.read(), system, results_file)

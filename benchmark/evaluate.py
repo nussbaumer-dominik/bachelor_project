@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+plt.style.use("default")
+import numpy as np
 import pandas as pd
 
 NEO4J_DIR = "neo4j_results"
@@ -51,49 +53,141 @@ def evaluate_foaf_results():
             print(f"Results match for query {i + 1}")
 
 
-def evaluate_lsqb():
-    neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_query_summary.csv')
-    postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_query_summary.csv')
+def evaluate_lsqb(show_whiskers=True):
+    neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-1_5-times_summary.csv')
+    postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-1_5-times_summary.csv')
 
     if len(neo4j_df) != len(postgres_df):
         print("Number of queries differ between Neo4j and PostgreSQL.")
         return
 
     neo4j_means = neo4j_df['mean_execution_time_s']
-    neo4j_std_devs = neo4j_df['std_dev_time_s']
     postgres_means = postgres_df['mean_execution_time_s']
+    neo4j_std_devs = neo4j_df['std_dev_time_s']
     postgres_std_devs = postgres_df['std_dev_time_s']
 
-    speed_diff_percent = ((postgres_means - neo4j_means) / neo4j_means) * 100
-
     num_queries = len(neo4j_means)
-    fig, axes = plt.subplots(num_queries, 1, figsize=(10, 6 * num_queries))
+    index = np.arange(num_queries) * 3
+    bar_width = 0.8
 
-    for i in range(num_queries):
-        ax = axes[i] if num_queries > 1 else axes
-        index = [0, 1]
-        means = [neo4j_means[i], postgres_means[i]]
-        std_devs = [neo4j_std_devs[i], postgres_std_devs[i]]
-        bar_labels = ['Neo4j', 'PostgreSQL']
+    fig, ax = plt.subplots(figsize=(12, 4))
+    if show_whiskers:
+        bars1 = ax.bar(index, neo4j_means, bar_width, yerr=neo4j_std_devs, label='Neo4j', capsize=5, alpha=0.7)
+        bars2 = ax.bar(index + bar_width, postgres_means, bar_width, yerr=postgres_std_devs, label='PostgreSQL',
+                       capsize=5, alpha=0.7)
+    else:
+        bars1 = ax.bar(index, neo4j_means, bar_width, label='Neo4j', alpha=0.7)
+        bars2 = ax.bar(index + bar_width, postgres_means, bar_width, label='PostgreSQL', alpha=0.7)
 
-        ax.bar(index, means, yerr=std_devs, align='center', alpha=0.7, ecolor='black', capsize=10)
-        ax.set_ylabel('Mean Execution Time (s)')
-        ax.set_title(f'Query {i + 1} Execution Time Comparison')
-        ax.set_xticks(index)
-        ax.set_xticklabels(bar_labels)
-        ax.set_xlabel('Database')
-        ax.yaxis.grid(True)
+    # Add execution times on top of bars
+    for bar in bars1:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2, yval, round(yval, 2), ha='center', va='bottom', fontsize=8)
+
+    for bar in bars2:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2, yval, round(yval, 2), ha='center', va='bottom', fontsize=8)
+
+    ax.set_xlabel('Queries')
+    ax.set_ylabel('Mean Execution Time (s)')
+    ax.set_title('Execution Time Comparison Across Queries')
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels([f'Query {i + 1}' for i in range(num_queries)], fontsize=9)
+    ax.legend()
+
+    # Add horizontal grid lines for better readability
+    ax.yaxis.grid(True, linestyle='--', which='major', color='grey', alpha=0.7)
 
     plt.tight_layout()
     plt.show()
 
+    # Calculate and print the percentage difference in speed
+    speed_diff_percent = ((postgres_means - neo4j_means) / neo4j_means) * 100
     for i in range(len(speed_diff_percent)):
         print(
             f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
 
 
+def evaluate_queries_across_scaling_factors(scaling_factors):
+    num_queries = 9
+    fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
+    axs = axs.flatten()
+
+    bar_width = 0.7
+    db_colors = {'Neo4j': 'tab:blue', 'Postgres': 'tab:orange'}
+
+    for query_index in range(1, num_queries + 1):
+        ax = axs[query_index - 1]
+        ticks = []
+
+        for i, scaling_factor in enumerate(scaling_factors):
+            neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{scaling_factor}_5-times_summary.csv')
+            postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-{scaling_factor}_5-times_summary.csv')
+
+            neo4j_means = neo4j_df.loc[neo4j_df['query_index'] == query_index, 'mean_execution_time_s']
+            postgres_means = postgres_df.loc[postgres_df['query_index'] == query_index, 'mean_execution_time_s']
+
+            index = np.arange(1) * len(scaling_factors) + i
+            ticks.append(index * bar_width * 2)
+
+            ax.bar(index * 2, neo4j_means, bar_width, label='Neo4j' if i == 0 else "", color=db_colors['Neo4j'],
+                   alpha=0.7)
+            ax.bar(index * 2 + bar_width, postgres_means, bar_width, label='Postgres' if i == 0 else "",
+                   color=db_colors['Postgres'], alpha=0.7)
+
+        ax.set_title(f'Query {query_index}')
+        ax.set_xlabel('Scaling Factors')
+        ax.set_ylabel('Execution Time (s)')
+        ax.set_yscale('log')
+        ax.set_xticks([x * 2 + bar_width / 2 for x in range(len(scaling_factors))])
+        ax.set_xticklabels([f'{sf}' for sf in scaling_factors])
+        if query_index == 1:
+            ax.legend(title="Database")
+
+    plt.show()
+
+# def evaluate_lsqb():
+#     neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-0.1_10-times_summary.csv')
+#     postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-0.1_10-times_summary.csv')
+#
+#     if len(neo4j_df) != len(postgres_df):
+#         print("Number of queries differ between Neo4j and PostgreSQL.")
+#         return
+#
+#     neo4j_means = neo4j_df['mean_execution_time_s']
+#     neo4j_std_devs = neo4j_df['std_dev_time_s']
+#     postgres_means = postgres_df['mean_execution_time_s']
+#     postgres_std_devs = postgres_df['std_dev_time_s']
+#
+#     speed_diff_percent = ((postgres_means - neo4j_means) / neo4j_means) * 100
+#
+#     num_queries = len(neo4j_means)
+#     fig, ax = plt.subplots(figsize=(10, 8))
+#     index = np.arange(num_queries)
+#     bar_width = 0.2
+#
+#     ax.bar(index - bar_width / 2, neo4j_means, bar_width, label='Neo4j', yerr=neo4j_std_devs, capsize=5)
+#     ax.bar(index + bar_width / 2, postgres_means, bar_width, label='PostgreSQL', yerr=postgres_std_devs,
+#            capsize=5)
+#
+#     ax.set_ylabel('Mean Execution Time (s)')
+#     ax.set_title('Execution Time Comparison by Query and Database')
+#     ax.set_xticks(index)
+#     ax.set_xticklabels([f'Query {i + 1}' for i in range(num_queries)])
+#     ax.legend()
+#     ax.yaxis.grid(True)
+#
+#     plt.tight_layout()
+#     plt.show()
+#
+#     for i in range(len(speed_diff_percent)):
+#         print(
+#             f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
+
+
 if __name__ == "__main__":
-    evaluate_lsqb()
+    #evaluate_lsqb(show_whiskers=False)
+    evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_foaf_results()
     # num_queries = 5
     # verify_results(num_queries)
