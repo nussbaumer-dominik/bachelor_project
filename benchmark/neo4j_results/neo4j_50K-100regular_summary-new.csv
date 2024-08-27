@@ -1,0 +1,4 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_foaf_1,[{'countOfPersons': 100}],0.021303558349609376,0.0275833770761623,1,[]
+2,bidirectional_foaf_2,[{'countOfPersons': 8977}],0.018596315383911134,0.0018136491408181775,1,[]
+3,shortest_path,"[{'p': [{'id': 1}, 'KNOWS', {'id': 421}, 'KNOWS', {'id': 9347}, 'KNOWS', {'id': 4999}]}]",0.04034714698791504,0.055647810114794506,1,[]

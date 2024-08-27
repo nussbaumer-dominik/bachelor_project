@@ -1,0 +1,10 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_foaf_1,"[(100,)]",0.39068036079406737,0.3644588036401295,1,[]
+2,bidirectional_foaf_2,"[(8977,)]",2.0461034297943117,0.11599696317521242,1,[]
+3,bidirectional_foaf_3,"[(49999,)]",5.7035774230957035,0.6447630734678066,1,[]
+4,bidirectional_foaf_4,"[(49999,)]",172.54398007392882,21.328621502921127,1,[]
+5,bidirectional_foaf_5,[],,0,0,['canceling statement due to statement timeout']
+6,bidirectional_foaf_6,[],,0,0,['canceling statement due to statement timeout']
+7,bidirectional_foaf_7,[],,0,0,['canceling statement due to statement timeout']
+8,bidirectional_foaf_8,[],,0,0,['canceling statement due to statement timeout']
+9,shortest_path,[],,0,0,['consuming input failed: server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.']

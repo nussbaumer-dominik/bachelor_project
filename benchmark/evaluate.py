@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+
 plt.style.use("default")
 import numpy as np
 import pandas as pd
@@ -108,6 +109,44 @@ def evaluate_lsqb(show_whiskers=True):
             f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
 
 
+def evaluate_foaf_across_configurations(configurations):
+    num_queries = 9
+    fig, axs = plt.subplots(3, 3, figsize=(18, 12), constrained_layout=True)
+    axs = axs.flatten()
+    bar_width = 0.7
+    db_colors = {'Neo4j': 'tab:blue', 'Postgres': 'tab:orange'}
+
+    for query_index in range(1, num_queries + 1):
+        ax = axs[query_index - 1]
+        ticks = []
+
+        for i, config in enumerate(configurations):
+            neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_{config}_summary.csv')
+            postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_{config}_summary.csv')
+
+            neo4j_means = neo4j_df.loc[neo4j_df['query_index'] == query_index, 'mean_execution_time_s']
+            postgres_means = postgres_df.loc[postgres_df['query_index'] == query_index, 'mean_execution_time_s']
+
+            index = np.arange(1) * len(configurations) + i
+            ticks.append(index * bar_width * 2)
+
+            ax.bar(index * 2, neo4j_means, bar_width, label='Neo4j' if i == 0 else "", color=db_colors['Neo4j'],
+                   alpha=0.7)
+            ax.bar(index * 2 + bar_width, postgres_means, bar_width, label='Postgres' if i == 0 else "",
+                   color=db_colors['Postgres'], alpha=0.7)
+
+        ax.set_title(f'FOAF Query {query_index}')
+        ax.set_xlabel('Configurations')
+        ax.set_ylabel('Execution Time (s)')
+        ax.set_yscale('log')
+        ax.set_xticks([x * 2 + bar_width / 2 for x in range(len(configurations))])
+        ax.set_xticklabels(configurations)
+        if query_index == 1:
+            ax.legend(title="Database")
+
+    plt.show()
+
+
 def evaluate_queries_across_scaling_factors(scaling_factors):
     num_queries = 9
     fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
@@ -145,6 +184,7 @@ def evaluate_queries_across_scaling_factors(scaling_factors):
             ax.legend(title="Database")
 
     plt.show()
+
 
 # def evaluate_lsqb():
 #     neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-0.1_10-times_summary.csv')
@@ -186,8 +226,9 @@ def evaluate_queries_across_scaling_factors(scaling_factors):
 
 
 if __name__ == "__main__":
-    #evaluate_lsqb(show_whiskers=False)
-    evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
+    # evaluate_lsqb(show_whiskers=False)
+    # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
+    evaluate_foaf_across_configurations(["1M-5regular", "1M-10regular", "1M-20regular", "100K-50regular"])
     # evaluate_foaf_results()
     # num_queries = 5
     # verify_results(num_queries)

@@ -26,17 +26,26 @@ def generate_regular_graph(n: int, degree: int) -> nx.Graph:
     return nx.random_regular_graph(degree, n)
 
 
-def restart_neo4j():
+def start_neo4j():
     try:
-        subprocess.run(f'docker restart {NEO4J_CONTAINER_NAME}', shell=True, check=True)
-        print("Neo4j restarted successfully.")
+        start_command = f"docker exec {NEO4J_CONTAINER_NAME} neo4j start"
+        subprocess.run(start_command, shell=True, check=True)
+        print("Neo4j database started successfully.")
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred during Neo4j restart: {e}")
+        print(f"Failed to start Neo4j database: {e}")
 
+def stop_neo4j():
+    try:
+        stop_command = f"docker exec {NEO4J_CONTAINER_NAME} neo4j stop"
+        subprocess.run(stop_command, shell=True, check=True)
+        print("Neo4j database stopped successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to stop Neo4j database: {e}")
 
 def import_graph_to_neo4j():
+    #stop_neo4j()
     command = (
-        f'docker exec {NEO4J_CONTAINER_NAME} neo4j-admin database import full --delimiter="," '
+        f'docker exec {NEO4J_CONTAINER_NAME} neo4j-admin database import full --verbose --delimiter="," '
         "--id-type=INTEGER "
         f"--nodes=Person=import/nodes.csv "
         f"--relationships=KNOWS=import/edges.csv "
@@ -45,9 +54,10 @@ def import_graph_to_neo4j():
     try:
         subprocess.run(command, shell=True, check=True)
         print("Neo4j import successful.")
-        restart_neo4j()
+        start_neo4j()
     except subprocess.CalledProcessError as e:
         print(f"An error occurred during Neo4j import: {e}")
+
 
 
 def export_graph_to_csv(g: nx.Graph, neo4j: bool):

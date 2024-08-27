@@ -20,6 +20,7 @@ docker run \
     --volume=${NEO4J_HOME}/import:/var/lib/neo4j/import:z \
     --volume=${NEO4J_HOME}/metrics:/var/lib/neo4j/metrics:z \
     --volume=${NEO4J_HOME}/plugins:/plugins:z \
+    --volume=${NEO4J_HOME}/conf:/var/lib/neo4j/conf \
     --env NEO4J_AUTH=none \
     --name ${NEO4J_CONTAINER_NAME} \
     neo4j:${NEO4J_VERSION}
