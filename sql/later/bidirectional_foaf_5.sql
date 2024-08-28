@@ -1,7 +1,7 @@
 WITH RECURSIVE friends AS (
     SELECT person1id, person2id, 1 AS depth, ARRAY[person1id, person2id] AS path
     FROM Person_knows_Person
-    WHERE person1id = 772
+    WHERE person1id = 33
 
     UNION ALL
 

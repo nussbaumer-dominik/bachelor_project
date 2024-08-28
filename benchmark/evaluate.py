@@ -98,8 +98,8 @@ def evaluate_foaf_across_configurations(configurations):
         postgres_line_data = []
 
         for i, config in enumerate(configurations):
-            neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_{config}_summary-new.csv')
-            postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_{config}_summary-new.csv')
+            neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_{config}_summary.csv')
+            postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_{config}_summary.csv')
 
             neo4j_means = neo4j_df.loc[neo4j_df['query_index'] == query_index, 'mean_execution_time_s']
             postgres_means = postgres_df.loc[postgres_df['query_index'] == query_index, 'mean_execution_time_s']

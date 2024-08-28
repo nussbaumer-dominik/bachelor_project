@@ -1,0 +1,9 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_foaf_1,[{'countOfPersons': 4}],0.023287582397460937,0.0437617859793276,1,[]
+2,bidirectional_foaf_2,[{'countOfPersons': 1944}],0.040903902053833006,0.07109153365613675,1,[]
+3,bidirectional_foaf_3,[{'countOfPersons': 9782}],0.06507716178894044,0.062219386393174585,1,[]
+4,bidirectional_foaf_4,[{'countOfPersons': 10277}],0.28269505500793457,0.05898401252365898,1,[]
+5,bidirectional_foaf_5,[{'countOfPersons': 10277}],1.0178064823150634,0.024109704354470393,1,[]
+6,bidirectional_foaf_6,[{'countOfPersons': 10277}],10.49301619529724,0.07900270482565633,1,[]
+7,bidirectional_foaf_7,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+8,shortest_path-lsqb,"[{'p': [{'id': 14}, 'KNOWS', {'id': 2435}, 'KNOWS', {'id': 66}]}]",0.01373739242553711,0.022345955118326166,1,[]

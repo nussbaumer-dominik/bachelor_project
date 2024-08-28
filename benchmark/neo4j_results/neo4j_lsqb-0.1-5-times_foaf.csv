@@ -1,10 +1,10 @@
 query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
-1,bidirectional_foaf_1,[{'countOfPersons': 20}],0.37094683647155763,0.6019458562953197,1,[]
-2,bidirectional_foaf_2,[{'countOfPersons': 380}],0.11040272712707519,0.04371936251016504,1,[]
-3,bidirectional_foaf_3,[{'countOfPersons': 7191}],0.1650315761566162,0.14186555732586778,1,[]
-4,bidirectional_foaf_4,[{'countOfPersons': 128102}],0.6293789863586425,0.8128532288398904,1,[]
-5,bidirectional_foaf_5,[{'countOfPersons': 926045}],2.8578048229217528,0.354187379468418,1,[]
+1,bidirectional_foaf_1,[{'countOfPersons': 2}],0.0719731330871582,0.14912708315744128,1,[]
+2,bidirectional_foaf_2,[{'countOfPersons': 454}],0.021466064453125,0.03408876656225115,1,[]
+3,bidirectional_foaf_3,[{'countOfPersons': 1421}],6.001079511642456,0.1201672408967232,1,[]
+4,bidirectional_foaf_4,[{'countOfPersons': 1537}],23.896842813491823,0.025966780593739035,1,[]
+5,bidirectional_foaf_5,[{'countOfPersons': 1537}],69.09782876968384,0.07395800124758149,1,[]
 6,bidirectional_foaf_6,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
 7,bidirectional_foaf_7,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
 8,bidirectional_foaf_8,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
-9,shortest_path,"[{'p': [{'id': 1}, 'KNOWS', {'id': 273727}, 'KNOWS', {'id': 889484}, 'KNOWS', {'id': 591101}, 'KNOWS', {'id': 497179}, 'KNOWS', {'id': 4999}]}]",0.1978520393371582,0.06453326654381748,1,[]
+9,shortest_path-lsqb,"[{'p': [{'id': 14}, 'KNOWS', {'id': 26388279067210}, 'KNOWS', {'id': 66}]}]",0.017005348205566408,0.029392897946621675,1,[]
