@@ -23,7 +23,7 @@ WITH RECURSIVE path(start_id, end_id, path, depth) AS (
     WHERE 
         pkp.person2id != ALL(p.path)
     AND 
-        p.depth < 10
+        p.depth < 4
 )
 SELECT path, depth
 FROM path
