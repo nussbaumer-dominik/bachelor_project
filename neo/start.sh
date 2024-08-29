@@ -27,6 +27,10 @@ docker run \
     --volume=${NEO4J_HOME}/plugins:/plugins:z \
     --volume=${NEO4J_HOME}/conf:/var/lib/neo4j/conf \
     --env NEO4J_AUTH=none \
+    -e NEO4J_apoc_export_file_enabled=true \
+    -e NEO4J_apoc_import_file_enabled=true \
+    -e NEO4J_apoc_import_file_use__neo4j__config=true \
+    -e NEO4J_PLUGINS=\[\"apoc\"\] \
     --name ${NEO4J_CONTAINER_NAME} \
     neo4j:${NEO4J_VERSION}
 
