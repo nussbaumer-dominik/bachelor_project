@@ -182,8 +182,51 @@ def evaluate_queries_across_scaling_factors(scaling_factors):
     plt.show()
 
 
+def evaluate_shortest_path():
+    neo4j_data = pd.read_csv(f'{NEO4J_DIR}/neo4j_shortest_path.csv')
+    neo4j_data['query_index'] = neo4j_data['query_index'].astype(str)
+
+    postgres_data = pd.read_csv(f'{POSTGRES_DIR}/postgres_shortest_path.csv')
+    postgres_data.columns = ['query_index', 'size', 'mean_execution_time_s', 'std_dev_time_s', 'errors']
+    postgres_data['query_index'] = postgres_data['query_index'].map({
+        '100K-50reg': '1', '50K-100reg': '2', '1M-5reg': '3',
+        '1M-10reg': '4', '1M-20reg': '5', 'SF0.1': '6',
+        'SF0.3': '7', 'SF1': '8'
+    })
+
+    merged_data = pd.merge(neo4j_data, postgres_data, on='query_index', suffixes=('_neo4j', '_postgres'))
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bar_width = 0.35
+    index = np.arange(len(merged_data))
+
+    bars_neo4j = ax.bar(index, merged_data['mean_execution_time_s_neo4j'], bar_width, label='Neo4j', color='tab:blue')
+    bars_postgres = ax.bar(index + bar_width, merged_data['mean_execution_time_s_postgres'], bar_width,
+                           label='Postgres', color='tab:orange')
+
+    for bars in [bars_neo4j, bars_postgres]:
+        for bar in bars:
+            height = bar.get_height()
+            ax.annotate(f'{height:.2f}s',
+                        xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 3),
+                        textcoords="offset points",
+                        ha='center', va='bottom')
+
+    ax.set_xlabel('Database Size and Configuration')
+    ax.set_ylabel('Mean Execution Time (s)')
+    ax.set_title('Comparison of Shortest Path Mean Execution Times for Neo4j and Postgres (Log Scale)')
+    ax.set_xticks(index + bar_width / 2, merged_data['size_neo4j'])
+    ax.legend()
+    ax.set_yscale('log')
+    ax.yaxis.grid(True, which='major', linestyle='--', linewidth='0.3', color='grey')
+    ax.yaxis.grid(False, which='minor')
+
+    plt.show()
+
+
 if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
-    evaluate_foaf_across_configurations(
-        ["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
+    # evaluate_foaf_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
+    evaluate_shortest_path()

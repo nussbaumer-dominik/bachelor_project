@@ -1,0 +1,2 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,shortest_path,"[{'p': [{'id': 1}, 'KNOWS', {'id': 12816}, 'KNOWS', {'id': 24468}, 'KNOWS', {'id': 4999}]}]",0.19816951751708983,0.4010590863438805,1,[]
