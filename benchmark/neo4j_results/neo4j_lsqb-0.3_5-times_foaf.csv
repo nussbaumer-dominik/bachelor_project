@@ -1,0 +1,10 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_foaf_1,[{'countOfPersons': 3}],0.07717986106872558,0.15855347085174704,1,[]
+2,bidirectional_foaf_2,[{'countOfPersons': 691}],0.02393827438354492,0.04071877113711356,1,[]
+3,bidirectional_foaf_3,[{'countOfPersons': 3304}],0.03803319931030273,0.03662806863885406,1,[]
+4,bidirectional_foaf_4,[{'countOfPersons': 3610}],212.04426150321962,0.6942633345900058,1,[]
+5,bidirectional_foaf_5,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+6,bidirectional_foaf_6,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+7,bidirectional_foaf_7,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+8,bidirectional_foaf_8,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+9,shortest_path-lsqb,"[{'p': [{'id': 14}, 'KNOWS', {'id': 15393162792709}, 'KNOWS', {'id': 4398046513221}, 'KNOWS', {'id': 66}]}]",0.018955373764038087,0.03135098461378474,1,[]

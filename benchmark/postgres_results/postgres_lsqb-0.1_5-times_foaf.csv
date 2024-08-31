@@ -4,4 +4,7 @@ query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,err
 3,bidirectional_foaf_3,"[(1421,)]",0.013668107986450195,0.0003164976958586483,1,[]
 4,bidirectional_foaf_4,"[(1537,)]",1.3060250282287598,0.18787931852777104,1,[]
 5,bidirectional_foaf_5,"[(1537,)]",63.90127553939819,2.1216432852223317,1,[]
-6,shortest_path-lsqb,"[([14, 910, 66], 2)]",4.663281011581421,0.19522475624588712,1,[]
+6,bidirectional_foaf_6,[],,0,0,['canceling statement due to statement timeout']
+7,bidirectional_foaf_7,[],,0,0,['canceling statement due to statement timeout']
+8,bidirectional_foaf_8,[],,0,0,['canceling statement due to statement timeout']
+9,shortest_path-lsqb,"[([14, 910, 66], 2)]",4.663281011581421,0.19522475624588712,1,[]

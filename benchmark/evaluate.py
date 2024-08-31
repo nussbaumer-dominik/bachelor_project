@@ -132,6 +132,58 @@ def evaluate_foaf_across_configurations(configurations):
     plt.show()
 
 
+def evaluate_foaf_lsqb_across_scaling_factors(configurations):
+    num_queries = 8
+    fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
+    axs = axs.flatten()
+    bar_width = 0.2
+    db_colors = {'Neo4j': 'tab:blue', 'Neo4j-index': 'tab:cyan', 'Postgres': 'tab:orange'}
+
+    for query_index in range(1, num_queries + 1):
+        ax = axs[query_index - 1]
+        neo4j_line_data = []
+        neo4j_index_line_data = []
+        postgres_line_data = []
+
+        base_indices = np.arange(len(configurations)) * 3 * bar_width
+
+        for i, config in enumerate(configurations):
+            neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_foaf.csv')
+            neo4j_index_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_foaf-index.csv')
+            postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-{config}_5-times_foaf.csv')
+
+            neo4j_mean = neo4j_df.loc[neo4j_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
+            neo4j_index_mean = neo4j_index_df.loc[neo4j_index_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
+            postgres_mean = postgres_df.loc[postgres_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
+
+            neo4j_line_data.append(neo4j_mean)
+            neo4j_index_line_data.append(neo4j_index_mean)
+            postgres_line_data.append(postgres_mean)
+
+            ax.bar(base_indices[i], neo4j_mean, bar_width, label='Neo4j' if i == 0 else "", color=db_colors['Neo4j'], alpha=0.7)
+            ax.bar(base_indices[i] + bar_width, neo4j_index_mean, bar_width, label='Neo4j index' if i == 0 else "", color=db_colors['Neo4j-index'], alpha=0.7)
+            ax.bar(base_indices[i] + 2 * bar_width, postgres_mean, bar_width, label='Postgres' if i == 0 else "", color=db_colors['Postgres'], alpha=0.7)
+
+        ax.plot(base_indices, neo4j_line_data, '-', marker='^', color=db_colors['Neo4j'])
+        ax.plot(base_indices + bar_width, neo4j_index_line_data, '-', marker='^', color=db_colors['Neo4j-index'])
+        ax.plot(base_indices + 2 * bar_width, postgres_line_data, '-', marker='s', color=db_colors['Postgres'])
+
+        ax.set_title(f'FOAF {query_index} hops')
+        ax.set_xlabel('Configurations')
+        ax.set_ylabel('Execution Time (s)')
+        ax.set_yscale('log')
+        ax.set_xticks(base_indices + 1.5 * bar_width)
+        ax.set_xticklabels(configurations)
+
+        if query_index == 1:
+            ax.legend(['Neo4j', 'Neo4j index', 'Postgres'], title="Database", loc='upper left')
+
+    axs[-1].axis('off')
+
+    plt.show()
+
+
+
 def evaluate_queries_across_scaling_factors(scaling_factors):
     num_queries = 9
     fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
@@ -229,4 +281,5 @@ if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_foaf_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
-    evaluate_shortest_path()
+    evaluate_foaf_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
+# evaluate_shortest_path()
