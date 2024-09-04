@@ -86,7 +86,7 @@ def evaluate_lsqb(show_whiskers=True):
             f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
 
 
-def evaluate_foaf_across_configurations(configurations):
+def evaluate_fof_across_configurations(configurations):
     num_queries = 8
     fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
     axs = axs.flatten()
@@ -117,7 +117,7 @@ def evaluate_foaf_across_configurations(configurations):
         ax.plot(indices, neo4j_line_data, '-', marker='^', color=db_colors['Neo4j'])
         ax.plot(indices + bar_width, postgres_line_data, '-', marker='s', color=db_colors['Postgres'])
 
-        ax.set_title(f'FOAF {query_index} hops')
+        ax.set_title(f'FOF {query_index} hops')
         ax.set_xlabel('Configurations')
         ax.set_ylabel('Execution Time (s)')
         ax.set_yscale('log')
@@ -132,7 +132,7 @@ def evaluate_foaf_across_configurations(configurations):
     plt.show()
 
 
-def evaluate_foaf_lsqb_across_scaling_factors(configurations):
+def evaluate_fof_lsqb_across_scaling_factors(configurations):
     num_queries = 8
     fig, axs = plt.subplots(3, 3, figsize=(15, 15), constrained_layout=True)
     axs = axs.flatten()
@@ -150,20 +150,20 @@ def evaluate_foaf_lsqb_across_scaling_factors(configurations):
 
         for i, config in enumerate(configurations):
             try:
-                neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_foaf.csv')
+                neo4j_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_fof.csv')
                 neo4j_mean = neo4j_df.loc[neo4j_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
             except Exception as _:
                 neo4j_mean = 0
 
             try:
-                neo4j_index_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_foaf-index.csv')
+                neo4j_index_df = pd.read_csv(f'{NEO4J_DIR}/neo4j_lsqb-{config}_5-times_fof-index.csv')
                 neo4j_index_mean = \
                     neo4j_index_df.loc[neo4j_index_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
             except Exception as _:
                 neo4j_index_mean = 0
 
             try:
-                postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-{config}_5-times_foaf.csv')
+                postgres_df = pd.read_csv(f'{POSTGRES_DIR}/postgres_lsqb-{config}_5-times_fof.csv')
                 postgres_mean = \
                     postgres_df.loc[postgres_df['query_index'] == query_index, 'mean_execution_time_s'].values[0]
             except Exception as _:
@@ -181,7 +181,7 @@ def evaluate_foaf_lsqb_across_scaling_factors(configurations):
         ax.plot(base_indices + bar_width, neo4j_index_line_data, '-', marker='^', color=db_colors['Neo4j-index'])
         ax.plot(base_indices + 2 * bar_width, postgres_line_data, '-', marker='s', color=db_colors['Postgres'])
 
-        ax.set_title(f'FOAF {query_index} hops')
+        ax.set_title(f'FOF {query_index} hops')
         ax.set_xlabel('Configurations')
         ax.set_ylabel('Execution Time (s)')
         ax.set_yscale('log')
@@ -295,6 +295,6 @@ def evaluate_shortest_path():
 if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
-    # evaluate_foaf_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
-    # evaluate_foaf_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
-    evaluate_shortest_path()
+    # evaluate_fof_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
+    evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
+    # evaluate_shortest_path()
