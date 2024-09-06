@@ -223,8 +223,15 @@ def evaluate_queries_across_scaling_factors(scaling_factors):
             index = i * 2 * (bar_width + 0.1)
             indices.append(index)
 
-            ax.bar(index, neo4j_means, bar_width, color=db_colors['Neo4j'], alpha=0.7)
-            ax.bar(index + bar_width, postgres_means, bar_width, color=db_colors['Postgres'], alpha=0.7)
+            bar1 = ax.bar(index, neo4j_means, bar_width, color=db_colors['Neo4j'], alpha=0.7)
+            bar2 = ax.bar(index + bar_width, postgres_means, bar_width, color=db_colors['Postgres'], alpha=0.7)
+
+            for bar, value in zip([bar1, bar2], [neo4j_means.values[0], postgres_means.values[0]]):
+                ax.annotate(f'{value:.2f}s',
+                            xy=(bar[0].get_x() + bar[0].get_width() / 2, value),
+                            xytext=(0, 3),
+                            textcoords="offset points",
+                            ha='center', va='bottom')
 
         ax.plot(indices, neo4j_line_data, '-', marker='^', color=db_colors['Neo4j'],
                 label='Neo4j Trend' if query_index == 1 else "")
@@ -294,7 +301,7 @@ def evaluate_shortest_path():
 
 if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
-    # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
+    evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_fof_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
-    evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
+    # evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
     # evaluate_shortest_path()
