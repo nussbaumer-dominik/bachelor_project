@@ -290,6 +290,13 @@ def evaluate_shortest_path():
 
     plt.show()
 
+    postgres_means = postgres_data['mean_execution_time_s']
+    neo4j_means = neo4j_data['mean_execution_time_s']
+    speed_diff_percent = ((postgres_means - neo4j_means) / neo4j_means) * 100
+    for i in range(len(speed_diff_percent)):
+        print(
+            f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
+
 
 if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
