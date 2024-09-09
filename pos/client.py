@@ -58,5 +58,5 @@ con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpass
 
 with open(f"results/postgres-results.csv", "a+") as results_file:
     for i in range(1, 10):
-        with open(f"sql/q{i}.sql", "r") as query_file:
+        with open(f"sql/lsqb/q{i}.sql", "r") as query_file:
             run_query(con, variant, sf, i, query_file.read(), system, results_file)

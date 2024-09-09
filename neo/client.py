@@ -39,7 +39,7 @@ session = driver.session()
 with open(f"results/neo4j-results.csv", "a+") as results_file:
     for i in range(1, 10):
         print(f"Query {i}")
-        with open(f"cypher/q{i}.cypher", "r") as query_file:
+        with open(f"cypher/lsqb/q{i}.cypher", "r") as query_file:
             run_query(session, system_variant, sf, i, query_file.read(), results_file)
 
 session.close()
