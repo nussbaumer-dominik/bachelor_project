@@ -311,9 +311,8 @@ def plot_execution_time_vs_scaling_factor():
     sf_postgres = postgres_data['SF'].astype(str)
     time_postgres = postgres_data['mean_execution_time_s']
 
-    fig, ax1 = plt.subplots(figsize=(10, 6))
+    fig, ax1 = plt.subplots(figsize=(10, 4))
 
-    # Plotting execution time
     ax1.set_xlabel('Scaling Factor (SF)')
     ax1.set_ylabel('Mean Execution Time (s)')
     ax1.plot(sf_neo4j, time_neo4j, label='Neo4j Execution Time', marker='o', linestyle='-', color='blue')
@@ -334,10 +333,11 @@ def plot_execution_time_vs_scaling_factor():
 
     for i in range(len(time_postgres)):
         factor = "1x" if i == 0 else f"{(time_postgres[i] / time_postgres[i - 1]):.2f}x"
+        y_offset = time_postgres[i] * 1.2
         if i == 0:
-            ax1.text(i, time_postgres[i] * 1.2, f'{time_postgres[i]:.2f}s', ha='center', color='green')
+            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s', ha='center', color='green')
         else:
-            ax1.text(i, time_postgres[i] * 1.2, f'{time_postgres[i]:.2f}s\n({factor})', ha='center', color='green')
+            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s\n({factor})', ha='center', color='green')
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Number of "KNOWS" relations')
