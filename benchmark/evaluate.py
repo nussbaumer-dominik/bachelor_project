@@ -297,10 +297,76 @@ def evaluate_shortest_path():
         print(
             f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
 
+    print(f"Average speed difference: {np.mean(speed_diff_percent):.2f}%")
+    print(f"Median speed difference: {np.median(speed_diff_percent):.2f}%")
+
+
+def plot_execution_time_vs_scaling_factor():
+    neo4j_data = pd.read_csv(f'{NEO4J_DIR}/neo4j_shortest_path_increase.csv')
+    postgres_data = pd.read_csv(f'{POSTGRES_DIR}/postgres_shortest_path_increase.csv')
+    sf_neo4j = neo4j_data['SF'].astype(str)
+    time_neo4j = neo4j_data['mean_execution_time_s']
+    edges_neo4j = neo4j_data['edges']
+
+    sf_postgres = postgres_data['SF'].astype(str)
+    time_postgres = postgres_data['mean_execution_time_s']
+
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plotting execution time
+    ax1.set_xlabel('Scaling Factor (SF)')
+    ax1.set_ylabel('Mean Execution Time (s)')
+    ax1.plot(sf_neo4j, time_neo4j, label='Neo4j Execution Time', marker='o', linestyle='-', color='blue')
+    ax1.plot(sf_postgres, time_postgres, label='PostgreSQL Execution Time', marker='o', linestyle='-', color='green')
+    ax1.set_yscale('log')
+    ax1.tick_params(axis='y')
+
+    for i, sf in enumerate(sf_neo4j):
+        y_offset = time_neo4j[i] * 1.2
+        if sf == '1':
+            y_offset = max(time_postgres[i] * 1.2, edges_neo4j[i] * 1.1)
+
+        factor = "1x" if i == 0 else f"{(time_neo4j[i] / time_neo4j[i - 1]):.2f}x"
+        if i == 0:
+            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s', ha='center', color='blue')
+        else:
+            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s\n({factor})', ha='center', color='blue')
+
+    for i in range(len(time_postgres)):
+        factor = "1x" if i == 0 else f"{(time_postgres[i] / time_postgres[i - 1]):.2f}x"
+        if i == 0:
+            ax1.text(i, time_postgres[i] * 1.2, f'{time_postgres[i]:.2f}s', ha='center', color='green')
+        else:
+            ax1.text(i, time_postgres[i] * 1.2, f'{time_postgres[i]:.2f}s\n({factor})', ha='center', color='green')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Number of "KNOWS" relations')
+    ax2.plot(sf_neo4j, edges_neo4j, label='Number of "KNOWS" relations', marker='s', linestyle='--', color='red')
+    ax2.tick_params(axis='y')
+
+    for i, sf in enumerate(sf_neo4j):
+        y_offset = edges_neo4j[i] * 1.1
+        if sf == '0.1':
+            y_offset = time_neo4j[i] * 1.3
+        elif sf == '1':
+            y_offset = time_postgres[i]
+
+        factor = "1x" if i == 0 else f"{(edges_neo4j[i] / edges_neo4j[i - 1]):.2f}x"
+        if i > 0:
+            ax2.text(i, y_offset, f'{factor}', ha='center', color='red')
+
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
+
+    ax1.grid(True)
+    plt.show()
+
 
 if __name__ == "__main__":
     # evaluate_lsqb(show_whiskers=False)
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_fof_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
     # evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
-    evaluate_shortest_path()
+    # evaluate_shortest_path()
+    plot_execution_time_vs_scaling_factor()

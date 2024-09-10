@@ -8,12 +8,10 @@ DECLARE
     paths JSONB; -- Store paths as a JSON object mapping person IDs to path arrays
     person_record RECORD; -- Define a record variable for use in the FOR loop
 BEGIN
-    -- Initialize queue with the start person and paths
     queue := ARRAY[start_person];
     paths := jsonb_set('{}', ARRAY[CAST(start_person AS TEXT)], '[]');
     visited := ARRAY[start_person];
 
-    -- BFS Loop
     WHILE array_length(queue, 1) > 0 LOOP
         current_person := queue[1];
         queue := queue[2:]; -- Dequeue
