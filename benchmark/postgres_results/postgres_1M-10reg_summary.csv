@@ -1,0 +1,10 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_fof_1,"[(10,)]",0.7415465354919434,0.7860165957700749,1,[]
+2,bidirectional_fof_2,"[(90,)]",4.020844507217407,0.025882783486715723,1,[]
+3,bidirectional_fof_3,"[(810,)]",7.871287870407104,0.15888425744236503,1,[]
+4,bidirectional_fof_4,"[(7270,)]",1.5828344821929932,0.01631675998434766,1,[]
+5,bidirectional_fof_5,"[(63480,)]",2.2051719188690186,0.010826836474772509,1,[]
+6,bidirectional_fof_6,"[(445515,)]",3.7128912925720217,0.0653762039274022,1,[]
+7,bidirectional_fof_7,"[(995004,)]",14.258626222610474,0.08124664449855773,1,[]
+8,bidirectional_fof_8,"[(999999,)]",94.07988619804382,2.8530630301057593,1,[]
+9,shortest_path,[],,0,0,['canceling statement due to statement timeout']

@@ -1,7 +1,9 @@
 python-dotenv
 neo4j
 psycopg
+tqdm
 numpy
 pandas
 matplotlib
 seaborn
+networkx

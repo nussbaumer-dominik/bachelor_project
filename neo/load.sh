@@ -23,6 +23,11 @@ docker run \
     --volume=${NEO4J_DATA_DIR}:/data:z \
     --volume=${NEO4J_HOME}/logs:/logs:z \
     --volume=${IMPORT_DATA_DIR_PROJECTED_FK}:/import:z \
+    --env NEO4J_dbms_memory_heap_initial__size=10900m \
+    --env NEO4J_dbms_memory_heap_max__size=10900m \
+    --env NEO4J_server_memory_heap_initial__size=10900m \
+    --env NEO4J_server_memory_pagecache_size=11600m \
+    --env NEO4J_server_memory_heap_max__size=10900m \
     ${NEO4J_ENV_VARS} \
     neo4j:${NEO4J_VERSION} \
     neo4j-admin database import full \

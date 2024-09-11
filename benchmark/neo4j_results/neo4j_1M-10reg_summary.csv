@@ -1,0 +1,10 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,bidirectional_fof_1,[{'countOfPersons': 10}],0.4543446063995361,0.8123294076998474,1,[]
+2,bidirectional_fof_2,[{'countOfPersons': 90}],0.11277179718017578,0.034049649614728124,1,[]
+3,bidirectional_fof_3,[{'countOfPersons': 810}],0.11546535491943359,0.06079055082579359,1,[]
+4,bidirectional_fof_4,[{'countOfPersons': 7270}],0.2403639316558838,0.2700853876772043,1,[]
+5,bidirectional_fof_5,[{'countOfPersons': 63480}],0.4217569351196289,0.5813942981464222,1,[]
+6,bidirectional_fof_6,[{'countOfPersons': 445516}],0.8231410026550293,0.059304229104509686,1,[]
+7,bidirectional_fof_7,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+8,bidirectional_fof_8,[],,0,0,"['{code: Neo.ClientError.Transaction.TransactionTimedOutClientConfiguration} {message: The transaction has been terminated. Retry your operation in a new transaction, and you should see a successful result. The transaction has not completed within the timeout specified at its start by the client. You may want to retry with a longer timeout. }']"
+9,shortest_path,"[{'p': [{'id': 1}, 'KNOWS', {'id': 906500}, 'KNOWS', {'id': 332068}, 'KNOWS', {'id': 896665}, 'KNOWS', {'id': 278952}, 'KNOWS', {'id': 619018}, 'KNOWS', {'id': 367276}, 'KNOWS', {'id': 4999}]}]",0.21453609466552734,0.07915371982695145,1,[]

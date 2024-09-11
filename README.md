@@ -1,19 +1,7 @@
-# Labelled Subgraph Query Benchmark (LSQB)
+# Comparative Analysis of Graph Data Modeling and Querying in Neo4j and PostgreSQL
 
-:page_facing_up: [LSQB: A Large-Scale Subgraph Query Benchmark](https://dl.acm.org/doi/pdf/10.1145/3461837.3464516), GRADES-NDA'21 paper ([presentation](https://docs.google.com/presentation/d/13B5XwwSlgi-r3a9tKNxo8HmdIRzegO6FMB-M6I1RW0I))
-
-## Overview
-
-A benchmark for subgraph matching but with type information (vertex and edge types). The primary goal of this benchmark is to test the query optimizer (join ordering, choosing between binary and n-ary joins) and the execution engine (join performance, support for worst-case optimal joins) of graph databases. Features found in more mature database systems and query languages such as date/string operations, query composition, complex aggregates/filters are out of scope for this benchmark.
-
-The benchmark consists of the following 9 queries:
-
-![](patterns.png)
-
-Inspirations and references:
-
-* [VLDB'19 keynote by Tamer Özsu](https://vldb2019.github.io/files/VLDB19-keynote-1-slides.pdf)
-* [CACM'21 technical perspective paper on graphs](https://dl.acm.org/doi/pdf/10.1145/3434642)
+This repository contains the code and scripts for the comparative analysis of graph data modeling and querying in Neo4j
+and PostgreSQL. The analysis used the LDBC SNB and LSQB benchmarks as a foundation.
 
 ## Getting started
 
@@ -21,76 +9,59 @@ Inspirations and references:
 
 1. Install Docker on your machine.
 
-1. (Optional) Change the location of Docker's data directory ([instructions](https://github.com/ftsrg/cheat-sheets/wiki/Docker#move-docker-data-folder-to-a-different-location)).
-
 1. Install the required dependencies:
 
    ```bash
    scripts/install-dependencies.sh
    ```
 
-1. (Optional) Install "convenience packages" (e.g. vim, ag, etc.).
+1. Navigate to the benchmark directory and install the python dependencies:
 
-   ```bash
-   scripts/install-convenience-packages.sh
-   ```
+    ```bash
+    cd benchmark
+    pip install -r requirements.txt
+    ```
 
-1. (Optional) Add the Umbra binaries as described in the `umb/README.md` file.
-
-1. (Optional) "Warm up" the system using `scripts/benchmark.sh`, e.g. run all systems through the smallest `example` data set. This should fill Docker caches.
-
-1. (Optional) Copy the data sets to the server. To **decompress and delete** them, run:
-
-   ```bash
-   for f in social-network-sf*.tar.zst; do echo ${f}; tar -I zstd -xvf ${f}; rm ${f}; done
-   ```
-
-1. Revise the benchmark settings, e.g. the number of threads for DuckDB.
+1. (Optional) "Warm up" the system using `scripts/benchmark.sh`, e.g. run all systems through the smallest `example`
+   data set. This should fill Docker caches.
 
 ### Creating the input data
 
 Data sets should be provided in two formats:
 
-* `data/social-network-sf${SF}-projected-fk`: projected foreign keys, the preferred format for most graph database management systems.
-* `data/social-network-sf${SF}-merged-fk`: merged foreign keys, the preferred format for most relational database management systems.
+* `data/social-network-sf${SF}-projected-fk`: projected foreign keys, the preferred format for most graph database
+  management systems.
+* `data/social-network-sf${SF}-merged-fk`: merged foreign keys, the preferred format for most relational database
+  management systems.
 
 An example data set is provided with the substitution `SF=example`:
 
 * `data/social-network-sfexample-projected-fk`
 * `data/social-network-sfexample-merged-fk`
 
-Pre-generated data sets are available in the [SURF/CWI data repository](https://repository.surfsara.nl/datasets/cwi/lsqb).
+Pre-generated data sets are available in
+the [SURF/CWI data repository](https://repository.surfsara.nl/datasets/cwi/lsqb).
 
-To download the data sets, set the `MAX_SF` environment variable to the size of the maximum scale factor you want to use (at least `1`) and run the download script.
+To download the data sets, set the `MAX_SF` environment variable to the size of the maximum scale factor you want to
+use (at least `1`) and run the download script.
 
 For example:
 
 ```bash
-export MAX_SF=3
+export MAX_SF=1
 scripts/download-projected-fk-data-sets.sh
 scripts/download-merged-fk-data-sets.sh
 ```
 
-For more information, see the [download instructions and links](https://github.com/ldbc/data-sets-surf-repository/#labelled-subgraph-query-benchmark-lsqb).
+For more information, see
+the [download instructions and links](https://github.com/ldbc/data-sets-surf-repository/#labelled-subgraph-query-benchmark-lsqb).
 
-### Running the benchmark
-
-The following implementations are provided. The :whale: symbol denotes that the implementation uses Docker.
-
-Stable implementations:
-
-* `pos`: [PostgreSQL](https://www.postgresql.org/) [SQL] :whale:
-* `neo`: [Neo4j Community Edition](https://neo4j.com/) [Cypher] :whale:
-
-:warning: Both Neo4j and Memgraph use the Bolt protocol for communicating with the client.
-To avoid clashing on port `7687`, the Memgraph instance uses port `27687` for its Bolt communication.
-Note that the two systems use different Bolt versions so different client libraries are necessary.
-
-#### Running the benchmark
+#### Running out benchmarking suite
 
 The benchmark run consists of two key steps: loading the data and running the queries on the database.
 
-Some systems need to be online before loading, while others need to be offline. To handle these differences in a unified way, we use three scripts for loading:
+Some systems need to be online before loading, while others need to be offline. To handle these differences in a unified
+way, we use three scripts for loading:
 
 * `pre-load.sh`: steps before loading the data (e.g. starting the DB for systems with online loaders)
 * `load.sh`: loads the data
@@ -100,9 +71,45 @@ The `init-and-load.sh` script calls these three scripts (`pre-load.sh`, `load.sh
 Therefore, to run the benchmark and clean up after execution, use the following three scripts:
 
 * `init-and-load.sh`: initialize the database and load the data
-* `run.sh`: runs the benchmark 
-* `stop.sh`: stops the database
+* `python benchmark/benchmark.py -t 300 -r 5 -np`: run the benchmark with a timeout of 300 seconds and 5 repetitions for
+  both Neo4j and Postgres. It will execute all queries that are directly located in the cypher and sql directories.
 
+Example usage that loads scale factor 0.3 to Neo4j:
+
+```bash
+cd neo
+export SF=0.3
+./init-and-load.sh
+cd ../benchmark
+python benchmark.py -t 300 -r 5 -n
+```
+
+Benchmark Suite usage:
+```bash
+usage: BachelorsThesisBenchmark [-h] [-t TIMEOUT] [-r RUNS] [-n] [-p] [-nd NEO4J_DIR] [-pd POSTGRES_DIR]
+
+Benchmark Neo4j and PostgreSQL with the given queries
+
+options:
+  -h, --help            show this help message and exit
+  -t TIMEOUT, --timeout TIMEOUT
+                        Timeout in seconds for each individual query run
+  -r RUNS, --runs RUNS  Number of runs for each query
+  -n, --neo4j           Run Neo4j queries
+  -p, --postgres        Run PostgreSQL queries
+  -nd NEO4J_DIR, --neo4j-dir NEO4J_DIR
+                        Result directory containing Neo4j queries
+  -pd POSTGRES_DIR, --postgres-dir POSTGRES_DIR
+                        Result directory containing PostgreSQL queries
+
+Please make sure to set the environment variables before running the script
+```
+
+The graphs can be generated using the `evalute.py` script in the benchmark directory. Edit main method to change what graphs are generated.
+
+#### Running the benchmark how the LSQB team envisioned it
+
+Follow the steps described in the section above but instead of running the python benchmark suite you will have to use the `run.sh` in the corresponding system directories.
 Example usage that loads scale factor 0.3 to Neo4j:
 
 ```bash
@@ -111,27 +118,24 @@ export SF=0.3
 ./init-and-load.sh && ./run.sh && ./stop.sh
 ```
 
-Example usage that runs multiple scale factors on DuckDB. Note that the `SF` environment variable needs to be exported.
+## Labelled Subgraph Query Benchmark (LSQB)
 
-```bash
-cd ddb
-export SF
-for SF in 0.1 0.3 1; do
-   ./init-and-load.sh && ./run.sh && ./stop.sh
-done
-```
+:page_facing_up: [LSQB: A Large-Scale Subgraph Query Benchmark](https://dl.acm.org/doi/pdf/10.1145/3461837.3464516),
+GRADES-NDA'21
+paper ([presentation](https://docs.google.com/presentation/d/13B5XwwSlgi-r3a9tKNxo8HmdIRzegO6FMB-M6I1RW0I))
 
-## Cross-validation
+### Overview
 
-Used the `cross-validate.sh` script. For example:
+A benchmark for subgraph matching but with type information (vertex and edge types). The primary goal of this benchmark
+is to test the query optimizer (join ordering, choosing between binary and n-ary joins) and the execution engine (join
+performance, support for worst-case optimal joins) of graph databases. Features found in more mature database systems
+and query languages such as date/string operations, query composition, complex aggregates/filters are out of scope for
+this benchmark.
 
-```bash
-scripts/cross-validate.sh --system DuckDB --variant "10 threads" --scale_factor 1
-scripts/cross-validate.sh --system Neo4j --scale_factor 0.1
-scripts/cross-validate.sh --system PostgreSQL --scale_factor example
-```
+The benchmark consists of the following 9 queries:
 
-## Philosophy
+![](patterns.png)
 
-* This benchmark has been inspired by the [LDBC SNB](https://arxiv.org/pdf/2001.02299.pdf) and the [JOB](https://db.in.tum.de/~leis/papers/lookingglass.pdf) benchmarks.
-* First and foremost, this benchmark is designed to be *simple*. In the spirit of this, we do not provide auditing guidelines – it's the user's responsibility to ensure that the benchmark setup is meaningful. We do not provide a common Java/Python driver component as the functionality required by the driver is very simple and can be implemented by users ideally in less than an hour.
+## Friends-of-Friends
+
+## Shortest Path

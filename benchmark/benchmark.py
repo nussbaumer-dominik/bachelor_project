@@ -1,10 +1,10 @@
-import csv
+import argparse
 import os
-import time
 
 from dotenv import load_dotenv, find_dotenv
-from neo4j import GraphDatabase
-from psycopg import connect
+
+from neo4j_connection import Neo4jConnection
+from postgres_connection import PostgreSQLConnection
 
 load_dotenv(find_dotenv(), override=True)
 
@@ -12,13 +12,29 @@ load_dotenv(find_dotenv(), override=True)
 NEO4J_URI = os.getenv('NEO4J_URI')
 NEO4J_USER = os.getenv('NEO4J_USER')
 NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD')
-POSTGRES_URI = os.getenv('POSTGRES_URI')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
 # Query directories
 NEO4J_QUERY_DIR = os.getenv('NEO4J_QUERY_DIR')
 POSTGRES_QUERY_DIR = os.getenv('POSTGRES_QUERY_DIR')
+
+parser = argparse.ArgumentParser(
+    description="Benchmark Neo4j and PostgreSQL with the given queries",
+    prog="BachelorsThesisBenchmark",
+    epilog="Please make sure to set the environment variables before running the script"
+)
+
+parser.add_argument("-t", "--timeout", type=int, default=120, help="Timeout in seconds for each individual query run")
+parser.add_argument("-r", "--runs", type=int, default=5, help="Number of runs for each query")
+parser.add_argument("-n", "--neo4j", action="store_true", help="Run Neo4j queries")
+parser.add_argument("-p", "--postgres", action="store_true", help="Run PostgreSQL queries")
+parser.add_argument("-nd", "--neo4j-dir", type=str, default="neo4j_results",
+                    help="Result directory containing Neo4j queries")
+parser.add_argument("-pd", "--postgres-dir", type=str, default="postgres_results",
+                    help="Result directory containing PostgreSQL queries")
 
 
 def read_queries(directory, extension):
@@ -28,93 +44,46 @@ def read_queries(directory, extension):
             file_path = os.path.join(directory, filename)
             with open(file_path, 'r') as file:
                 query = file.read().strip()
-                queries.append(query)
+                queries.append((os.path.splitext(filename)[0], query))
+
     return queries
 
 
-def run_neo4j_queries(queries: list):
-    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-    results = []
-    all_query_stats = []
-    with driver.session() as session:
-        for idx, query in enumerate(queries):
-            start_time = time.time()
-            result = session.run(query)
-            data = result.data()  # Fetch data before consuming
-            result_summary = result.consume()
-            end_time = time.time()
-
-            query_time = end_time - start_time
-            available_after = result_summary.result_available_after
-            consumed_after = result_summary.result_consumed_after
-
-            # Collect statistics for each query
-            query_stats = {
-                "query_index": idx + 1,
-                "execution_time": query_time,
-                "available_after": available_after,
-                "consumed_after": consumed_after,
-                "num_records": len(data)
-            }
-            all_query_stats.append(query_stats)
-
-            results.append({"data": data})
-
-            save_query_results(idx + 1, data)
-
-    driver.close()
-    return results, all_query_stats
-
-
-def run_postgres_queries_and_save(queries):
-    with connect(POSTGRES_URI) as conn:
-        with conn.cursor() as cursor:
-            results = []
-            for idx, query in enumerate(queries):
-                start_time = time.time()
-                cursor.execute(query)
-                end_time = time.time()
-                query_time = end_time - start_time
-                rows = cursor.fetchall()
-                columns = [desc[0] for desc in cursor.description]
-                results.append({"rows": rows, "execution_time": query_time,
-                                "query_plan": cursor.query_plan if hasattr(cursor, 'query_plan') else "N/A"})
-                with open(f'postgres_query_{idx + 1}_results.csv', 'w', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow(columns + ['execution_time'])
-                    for row in rows:
-                        writer.writerow(list(row) + [query_time])
-    return results
-
-
-def save_query_results(query_index, data):
-    filename = f'neo4j_query_{query_index}_results.csv'
-    fieldnames = []
-    if data:
-        sample_row = data[0]
-        fieldnames = list(sample_row.keys())
-
-    with open(filename, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-
-
-def save_all_query_stats(all_results):
-    with open('neo4j_query_summary.csv', 'w', newline='') as file:
-        fieldnames = ['query_index', 'execution_time', 'available_after', 'consumed_after', 'num_records']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(all_results)
-
-
 def main():
+    args = parser.parse_args()
+    print(args)
     neo4j_queries = read_queries(NEO4J_QUERY_DIR, '.cypher')
     postgres_queries = read_queries(POSTGRES_QUERY_DIR, '.sql')
-    neo4j_results, neo4j_query_stats = run_neo4j_queries(neo4j_queries)
-    save_all_query_stats(neo4j_query_stats)
-    # run_postgres_queries_and_save(postgres_queries)
+
+    if len(neo4j_queries) > 0 and args.neo4j:
+        neo4j_conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+        try:
+            print("Running Neo4j Queries")
+            neo4j_results, neo4j_query_stats = neo4j_conn.run_queries(
+                neo4j_queries, result_dir=args.neo4j_dir,
+                runs=args.runs, timeout_seconds=args.timeout
+            )
+            print("Neo4j Results", neo4j_results)
+        finally:
+            neo4j_conn.close()
+    else:
+        print("No Neo4j Queries to run")
+
+    if len(postgres_queries) > 0 and args.postgres:
+        postgres_conn = PostgreSQLConnection(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD)
+        try:
+            print("Running Postgres Queries")
+            postgres_results, postgres_query_stats = postgres_conn.run_queries(
+                postgres_queries,
+                result_dir=args.postgres_dir,
+                runs=args.runs,
+                timeout_seconds=args.timeout
+            )
+            print("Postgres Results", postgres_results)
+        finally:
+            postgres_conn.close()
+    else:
+        print("No Postgres Queries to run")
 
 
 if __name__ == "__main__":

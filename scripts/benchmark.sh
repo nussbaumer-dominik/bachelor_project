@@ -8,9 +8,10 @@ set -o pipefail
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
-#SFS="0.1 0.3 1 3 10"
-SFS="example"
-SYSTEMS="pos neo"
+SFS="0.3"
+SYSTEMS="neo"
+WARMUP_SF="example"
+RUNS=5
 
 export SF
 for SF in ${SFS}; do
@@ -18,7 +19,10 @@ for SF in ${SFS}; do
     for SYSTEM in ${SYSTEMS}; do
         echo Benchmarking system ${SYSTEM}
         cd ${SYSTEM}
-        ./init-and-load.sh && ./run.sh && ./stop.sh
+        for RUN in $(seq 1 ${RUNS}); do
+            echo "Run ${RUN} of ${RUNS}"
+            ./init-and-load.sh && ./run.sh && ./stop.sh
+        done
         cd ..
     done
 done
