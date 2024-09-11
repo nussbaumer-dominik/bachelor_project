@@ -280,14 +280,13 @@ def evaluate_shortest_path():
 
     ax.set_xlabel('Database Size and Configuration')
     ax.set_ylabel('Mean Execution Time (s)')
-    ax.set_title('Comparison of Shortest Path Mean Execution Times for Neo4j and Postgres (Log Scale)')
     ax.set_xticks(index + bar_width / 2)
     ax.set_xticklabels(merged_data['size_neo4j'])
     ax.legend()
     ax.set_yscale('log')
     ax.yaxis.grid(True, which='major', linestyle='--', linewidth='0.5', color='grey')
     ax.yaxis.grid(False, which='minor')
-
+    plt.tight_layout()
     plt.show()
 
     postgres_means = postgres_data['mean_execution_time_s']
@@ -315,8 +314,8 @@ def plot_execution_time_vs_scaling_factor():
 
     ax1.set_xlabel('Scaling Factor (SF)')
     ax1.set_ylabel('Mean Execution Time (s)')
-    ax1.plot(sf_neo4j, time_neo4j, label='Neo4j Execution Time', marker='o', linestyle='-', color='blue')
-    ax1.plot(sf_postgres, time_postgres, label='PostgreSQL Execution Time', marker='o', linestyle='-', color='green')
+    ax1.plot(sf_neo4j, time_neo4j, label='Neo4j Execution Time', marker='o', linestyle='-', color=db_colors['Neo4j'])
+    ax1.plot(sf_postgres, time_postgres, label='PostgreSQL Execution Time', marker='o', linestyle='-', color=db_colors['Postgres'])
     ax1.set_yscale('log')
     ax1.tick_params(axis='y')
 
@@ -327,17 +326,17 @@ def plot_execution_time_vs_scaling_factor():
 
         factor = "1x" if i == 0 else f"{(time_neo4j[i] / time_neo4j[i - 1]):.2f}x"
         if i == 0:
-            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s', ha='center', color='blue')
+            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s', ha='center', color=db_colors['Neo4j'])
         else:
-            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s\n({factor})', ha='center', color='blue')
+            ax1.text(i, y_offset, f'{time_neo4j[i]:.3f}s\n({factor})', ha='center', color=db_colors['Neo4j'])
 
     for i in range(len(time_postgres)):
         factor = "1x" if i == 0 else f"{(time_postgres[i] / time_postgres[i - 1]):.2f}x"
         y_offset = time_postgres[i] * 1.2
         if i == 0:
-            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s', ha='center', color='green')
+            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s', ha='center', color=db_colors['Postgres'])
         else:
-            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s\n({factor})', ha='center', color='green')
+            ax1.text(i, y_offset, f'{time_postgres[i]:.2f}s\n({factor})', ha='center', color=db_colors['Postgres'])
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Number of "KNOWS" relations')
@@ -358,8 +357,8 @@ def plot_execution_time_vs_scaling_factor():
     lines_1, labels_1 = ax1.get_legend_handles_labels()
     lines_2, labels_2 = ax2.get_legend_handles_labels()
     ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
-
     ax1.grid(True)
+    plt.tight_layout()
     plt.show()
 
 
