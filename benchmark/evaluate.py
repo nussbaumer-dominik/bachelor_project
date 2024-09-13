@@ -128,7 +128,8 @@ def evaluate_fof_across_configurations(configurations):
             ax.legend([neo4j_bar, postgres_bar], ['Neo4j', 'Postgres'], title="Database", loc='upper left')
 
     axs[-1].axis('off')
-
+    # plt.plot()
+    # plt.savefig('fof-benchmark-results.pdf', format='pdf')
     plt.show()
 
 
@@ -192,7 +193,8 @@ def evaluate_fof_lsqb_across_scaling_factors(configurations):
             ax.legend(['Neo4j', 'Neo4j index', 'Postgres'], title="Database", loc='upper left')
 
     axs[-1].axis('off')
-
+    # plt.plot()
+    # plt.savefig('fof-lsqb-benchmark-results.pdf', format='pdf')
     plt.show()
 
 
@@ -250,6 +252,8 @@ def evaluate_queries_across_scaling_factors(scaling_factors):
                        ax.bar(0, 0, color=db_colors['Postgres'], alpha=0.7)],
                       ['Neo4j', 'Postgres'], title="Database")
 
+    plt.plot()
+    plt.savefig('lsqb-benchmark-results.pdf', format='pdf')
     plt.show()
 
 
@@ -287,6 +291,8 @@ def evaluate_shortest_path():
     ax.yaxis.grid(True, which='major', linestyle='--', linewidth='0.5', color='grey')
     ax.yaxis.grid(False, which='minor')
     plt.tight_layout()
+    # plt.plot()
+    # plt.savefig('shortest-path-benchmark-results.pdf', format='pdf')
     plt.show()
 
     postgres_means = postgres_data['mean_execution_time_s']
@@ -315,7 +321,8 @@ def plot_execution_time_vs_scaling_factor():
     ax1.set_xlabel('Scaling Factor (SF)')
     ax1.set_ylabel('Mean Execution Time (s)')
     ax1.plot(sf_neo4j, time_neo4j, label='Neo4j Execution Time', marker='o', linestyle='-', color=db_colors['Neo4j'])
-    ax1.plot(sf_postgres, time_postgres, label='PostgreSQL Execution Time', marker='o', linestyle='-', color=db_colors['Postgres'])
+    ax1.plot(sf_postgres, time_postgres, label='PostgreSQL Execution Time', marker='o', linestyle='-',
+             color=db_colors['Postgres'])
     ax1.set_yscale('log')
     ax1.tick_params(axis='y')
 
@@ -359,6 +366,8 @@ def plot_execution_time_vs_scaling_factor():
     ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
     ax1.grid(True)
     plt.tight_layout()
+    # plt.plot()
+    # plt.savefig('sp-increase.pdf', format='pdf')
     plt.show()
 
 
@@ -367,5 +376,5 @@ if __name__ == "__main__":
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_fof_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
     # evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
-    # evaluate_shortest_path()
-    plot_execution_time_vs_scaling_factor()
+    evaluate_shortest_path()
+    # plot_execution_time_vs_scaling_factor()
