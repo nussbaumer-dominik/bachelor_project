@@ -305,6 +305,54 @@ def evaluate_shortest_path():
     print(f"Average speed difference: {np.mean(speed_diff_percent):.2f}%")
     print(f"Median speed difference: {np.median(speed_diff_percent):.2f}%")
 
+def evaluate_shortest_path_improved():
+    neo4j_data = pd.read_csv(f'{NEO4J_DIR}/neo4j_shortest_path_improved.csv')
+    postgres_data = pd.read_csv(f'{POSTGRES_DIR}/postgres_shortest_path_improved.csv')
+    neo4j_data['query_index'] = neo4j_data['query_index'].astype(str)
+    postgres_data['query_index'] = postgres_data['query_index'].astype(str)
+    merged_data = pd.merge(neo4j_data, postgres_data, on='query_index', suffixes=('_neo4j', '_postgres'))
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bar_width = 0.35
+    index = np.arange(len(merged_data))
+
+    bars_neo4j = ax.bar(index, merged_data['mean_execution_time_s_neo4j'], bar_width, label='Neo4j',
+                        color=db_colors['Neo4j'])
+    bars_postgres = ax.bar(index + bar_width, merged_data['mean_execution_time_s_postgres'], bar_width,
+                           label='Postgres', color=db_colors['Postgres'])
+
+    for bars in [bars_neo4j, bars_postgres]:
+        for bar in bars:
+            height = bar.get_height()
+            ax.annotate(f'{height:.4f}s',
+                        xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 3),
+                        textcoords="offset points",
+                        ha='center', va='bottom')
+
+    ax.set_xlabel('LSQB Scaling Factor')
+    ax.set_ylabel('Mean Execution Time (s)')
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels(merged_data['size_neo4j'])
+    ax.legend(loc='upper left')
+    ax.set_yscale('log')
+    ax.yaxis.grid(True, which='major', linestyle='--', linewidth='0.5', color='grey')
+    ax.yaxis.grid(False, which='minor')
+    plt.tight_layout()
+    #plt.plot()
+    #plt.savefig('shortest-path-optimized-benchmark-results.pdf', format='pdf')
+    plt.show()
+
+    postgres_means = postgres_data['mean_execution_time_s']
+    neo4j_means = neo4j_data['mean_execution_time_s']
+    speed_diff_percent = ((postgres_means - neo4j_means) / neo4j_means) * 100
+    for i in range(len(speed_diff_percent)):
+        print(
+            f"Query {i + 1}: PostgreSQL is {'faster' if speed_diff_percent[i] < 0 else 'slower'} than Neo4j by {abs(speed_diff_percent[i]):.2f}%")
+
+    print(f"Average speed difference: {np.mean(speed_diff_percent):.2f}%")
+    print(f"Median speed difference: {np.median(speed_diff_percent):.2f}%")
+
 
 def plot_execution_time_vs_scaling_factor():
     neo4j_data = pd.read_csv(f'{NEO4J_DIR}/neo4j_shortest_path_increase.csv')
@@ -376,5 +424,6 @@ if __name__ == "__main__":
     # evaluate_queries_across_scaling_factors([0.1, 0.3, 1])
     # evaluate_fof_across_configurations(["100K-50reg", "50K-100reg", "1M-5reg", "1M-10reg", "1M-20reg"])
     # evaluate_fof_lsqb_across_scaling_factors(["0.1", "0.3", "1"])
-    evaluate_shortest_path()
+    #evaluate_shortest_path()
+    evaluate_shortest_path_improved()
     # plot_execution_time_vs_scaling_factor()

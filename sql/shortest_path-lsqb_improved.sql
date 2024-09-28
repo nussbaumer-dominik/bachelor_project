@@ -1,9 +1,10 @@
-WITH RECURSIVE path(start_id, end_id, path, depth) AS (
+ WITH RECURSIVE path(start_id, end_id, path, depth, found) AS (
     SELECT
         person1id AS start_id,
         person2id AS end_id,
         ARRAY[person1id, person2id]::bigint[] AS path,
-        1 AS depth
+        1 AS depth,
+        person2id = 66 AS found
     FROM
         Person_knows_Person
     WHERE
@@ -13,21 +14,20 @@ WITH RECURSIVE path(start_id, end_id, path, depth) AS (
 
     SELECT
         p.start_id,
-        pkp.person2id AS end_id,
+        pkp.person2id,
         p.path || pkp.person2id,
-        p.depth + 1
+        p.depth + 1,
+        pkp.person2id = 66 AS found
     FROM
         path p
     JOIN
         Person_knows_Person pkp ON p.end_id = pkp.person1id
     WHERE
-        NOT pkp.person2id = ANY(p.path)
-    AND 
-        p.depth < 4
+        p.depth < 100
+        AND NOT pkp.person2id = ANY(p.path)
+        AND NOT p.found
 )
 SELECT path, depth
 FROM path
-WHERE end_id = 66
-ORDER BY depth ASC
+WHERE found
 LIMIT 1;
-
