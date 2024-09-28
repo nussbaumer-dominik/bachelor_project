@@ -1,0 +1,3 @@
+query_index,filename,result,mean_execution_time_s,std_dev_time_s,num_records,errors
+1,shortest_path-lsqb,"[([14, 30786325579843, 3648, 66], 3)]",12.323309230804444,0.4063860486501227,1,[]
+2,shortest_path-lsqb_improved,"[([14, 30786325579843, 3648, 66], 3)]",0.11197786331176758,0.006087443742637055,1,[]
